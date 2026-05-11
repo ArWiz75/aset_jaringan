@@ -33,7 +33,7 @@
 
         <div class="mt-6">
             <button type="submit" class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300">
-                Masuk
+                Masuk Bro
             </button>
         </div>
 
