@@ -20,12 +20,14 @@ class Device extends Model
         'status',
         'mikrotik_backup_config',
         'tanggal_install',
+        'tanggal_rusak',
         'keterangan',
         'foto_perangkat',
     ];
 
     protected $casts = [
         'tanggal_install' => 'date',
+        'tanggal_rusak' => 'date',
     ];
 
     /**

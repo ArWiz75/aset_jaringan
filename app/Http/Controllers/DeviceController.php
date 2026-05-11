@@ -64,6 +64,7 @@ class DeviceController extends Controller
             'status' => 'required|in:Aktif,Rusak,Maintenance,Nonaktif',
             'mikrotik_backup_config' => 'nullable|string',
             'tanggal_install' => 'nullable|date',
+            'tanggal_rusak' => 'required_if:status,Rusak|nullable|date',
             'keterangan' => 'nullable|string',
             'foto_perangkat' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:5120',
         ]);
@@ -108,6 +109,7 @@ class DeviceController extends Controller
             'status' => 'required|in:Aktif,Rusak,Maintenance,Nonaktif',
             'mikrotik_backup_config' => 'nullable|string',
             'tanggal_install' => 'nullable|date',
+            'tanggal_rusak' => 'required_if:status,Rusak|nullable|date',
             'keterangan' => 'nullable|string',
             'foto_perangkat' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:5120',
         ]);
