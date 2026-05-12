@@ -5,7 +5,7 @@
         <select name="device_id" required class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm">
             <option value="">Pilih Perangkat</option>
             @foreach($devices as $device)
-            <option value="{{ $device->id }}" {{ old('device_id', $log->device_id ?? $selectedDeviceId ?? '') == $device->id ? 'selected' : '' }}>{{ $device->merk }} {{ $device->nomor_seri }} ({{ $device->model }}) - {{ $device->opdLocation->nama ?? '' }}</option>
+            <option value="{{ $device->id }}" {{ old('device_id', $log->device_id ?? $selectedDeviceId ?? '') == $device->id ? 'selected' : '' }}>{{ $device->merk }} {{ $device->model }} (SN: {{ $device->nomor_seri }}) - {{ $device->opdLocation->nama ?? '' }}</option>
             @endforeach
         </select>
         @error('device_id') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror

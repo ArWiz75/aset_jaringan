@@ -54,7 +54,7 @@
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                         <td class="px-4 py-2.5">
                             <p class="font-bold text-slate-800 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $device->merk }}</p>
-                            <p class="text-[9px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-tighter">{{ $device->nomor_seri }}</p>
+                            <p class="text-[9px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-tighter">{{ $device->model }}</p>
                         </td>
                         <td class="px-4 py-2.5">
                             <div class="flex items-center gap-2">

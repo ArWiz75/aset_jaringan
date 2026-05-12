@@ -52,8 +52,8 @@
                     @forelse($logs as $log)
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                         <td class="px-4 py-4">
-                            <p class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $log->device->merk ?? '-' }}</p>
-                            <p class="text-[10px] font-medium text-slate-500">{{ $log->device->nomor_seri ?? '' }}</p>
+                            <p class="text-sm font-bold text-slate-800 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $log->device->merk ?? '-' }} {{ $log->device->model ?? '' }}</p>
+                            <p class="text-[10px] font-medium text-slate-500">SN: {{ $log->device->nomor_seri ?? '-' }}</p>
                         </td>
                         <td class="px-4 py-4"><span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700/50">{{ $log->jenis }}</span></td>
                         <td class="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs max-w-xs truncate leading-relaxed">{{ Str::limit($log->deskripsi, 60) }}</td>

@@ -8,8 +8,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
             <div>
                 <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Perangkat</p>
-                <p class="text-sm text-slate-900 dark:text-white font-bold leading-tight">{{ $maintenanceLog->device->merk ?? '-' }} {{ $maintenanceLog->device->nomor_seri ?? '' }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">SN: {{ $maintenanceLog->device->model ?? '-' }}</p>
+                <p class="text-sm text-slate-900 dark:text-white font-bold leading-tight">{{ $maintenanceLog->device->merk ?? '-' }} {{ $maintenanceLog->device->model ?? '' }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">SN: {{ $maintenanceLog->device->nomor_seri ?? '-' }}</p>
             </div>
             <div>
                 <p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Lokasi</p>

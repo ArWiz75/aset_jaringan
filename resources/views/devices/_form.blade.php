@@ -35,14 +35,15 @@
         </div>
         <div>
             <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Nomor Seri</label>
-            <input type="text" name="model" value="{{ old('model', $d->model ?? '') }}" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm" placeholder="Masukkan Nomor Seri">
+            <input type="text" name="nomor_seri" value="{{ old('nomor_seri', $d->nomor_seri ?? '') }}" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm" placeholder="Masukkan Nomor Seri">
+            @error('nomor_seri') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
         </div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div>
-            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Model <span class="text-red-500">*</span></label>
-            <input type="text" name="nomor_seri" value="{{ old('nomor_seri', $d->nomor_seri ?? '') }}" required class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm" placeholder="RB750Gr3, Catalyst 2960, dll">
-            @error('nomor_seri') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Model</label>
+            <input type="text" name="model" value="{{ old('model', $d->model ?? '') }}" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm" placeholder="RB750Gr3, Catalyst 2960, dll">
+            @error('model') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
         </div>
         <div>
             <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">IP Address</label>

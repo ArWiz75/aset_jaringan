@@ -12,7 +12,7 @@
     @endphp
     <div class="mb-6">
         <a href="{{ $backUrl }}" class="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 text-sm font-medium transition-colors">{{ $backText }}</a>
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">{{ $device->merk }} {{ $device->nomor_seri }}</h1>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">{{ $device->merk }} {{ $device->model }}</h1>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Device Info --}}
@@ -25,8 +25,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Merk</p><p class="text-sm text-slate-800 dark:text-white font-semibold">{{ $device->merk }}</p></div>
                     <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Tipe</p><p class="text-sm flex items-center gap-2"><x-device-icon :type="$device->tipe" class="w-4 h-4" /><span class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700/50">{{ $device->tipe }}</span></p></div>
-                    <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Nomor Seri</p><p class="text-sm text-slate-800 dark:text-white font-mono">{{ $device->model ?? '-' }}</p></div>
-                    <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Model</p><p class="text-sm text-slate-800 dark:text-white">{{ $device->nomor_seri }}</p></div>
+                    <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Nomor Seri</p><p class="text-sm text-slate-800 dark:text-white font-mono">{{ $device->nomor_seri }}</p></div>
+                    <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Model</p><p class="text-sm text-slate-800 dark:text-white">{{ $device->model ?? '-' }}</p></div>
                     <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">IP Address</p><p class="text-sm text-cyan-600 dark:text-cyan-400 font-mono font-bold">{{ $device->ip_address ?? '-' }}</p></div>
                     <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Status</p><p class="text-sm"><span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $device->status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : ($device->status === 'Rusak' ? 'bg-red-500/10 text-red-600 dark:text-red-400' : ($device->status === 'Maintenance' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-slate-500/10 text-slate-500')) }}">{{ $device->status }}</span></p></div>
                     <div><p class="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500 mb-1">Tanggal Install</p><p class="text-sm text-slate-800 dark:text-white">{{ $device->tanggal_install ? $device->tanggal_install->format('d M Y') : '-' }}</p></div>

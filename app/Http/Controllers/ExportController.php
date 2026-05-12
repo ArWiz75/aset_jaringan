@@ -60,7 +60,7 @@ class ExportController extends Controller
         $sheet->setTitle('Data Perangkat');
 
         // Header
-        $headers = ['No', 'Merk', 'Tipe', 'Nomor Seri', 'Model', 'IP Address', 'Status', 'Lokasi OPD', 'Lokasi Pemasangan', 'Tanggal Install', 'Keterangan'];
+        $headers = ['No', 'Merk', 'Tipe', 'Model', 'Nomor Seri', 'IP Address', 'Status', 'Lokasi OPD', 'Lokasi Pemasangan', 'Tanggal Install', 'Keterangan'];
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col . '1', $header);

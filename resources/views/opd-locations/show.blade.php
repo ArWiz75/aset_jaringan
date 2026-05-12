@@ -162,11 +162,11 @@
                                 <x-device-icon :type="$device->tipe" class="w-4 h-4" />
                             </div>
                             <div class="min-w-0">
-                                <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $device->merk }}</h4>
+                                <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $device->merk }} {{ $device->model }}</h4>
                                 <div class="flex items-center gap-2 mt-0.5">
                                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{{ $device->tipe }}</span>
                                     <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400">{{ $device->nomor_seri ?? '-' }}</span>
+                                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400">SN: {{ $device->nomor_seri ?? '-' }}</span>
                                     <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
                                     <span class="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 font-bold">{{ $device->ip_address ?? '-' }}</span>
                                     @if($device->lokasi_pemasangan)

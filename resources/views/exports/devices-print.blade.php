@@ -65,7 +65,7 @@
     <table>
         <thead>
             <tr>
-                <th>No</th><th>Merk</th><th>Tipe</th><th>No. Seri</th><th>Model</th><th>IP Address</th><th>Lokasi OPD</th><th>Lokasi Pemasangan</th><th>Status</th><th>Tgl Install</th>
+                <th>No</th><th>Merk</th><th>Tipe</th><th>Model</th><th>No. Seri</th><th>IP Address</th><th>Lokasi OPD</th><th>Lokasi Pemasangan</th><th>Status</th><th>Tgl Install</th>
             </tr>
         </thead>
         <tbody>
