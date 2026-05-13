@@ -166,11 +166,11 @@
                         @foreach($groupedDevices as $roomName => $roomDevices)
                         <div x-data="{ open: true }" @toggle-all-rooms.window="open = !open" class="rounded-2xl border border-slate-200/70 dark:border-slate-700/40 overflow-hidden transition-all duration-300 shadow-sm">
                             {{-- Room Header --}}
-                            <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800/60 dark:to-slate-800/30 hover:from-slate-200/80 hover:to-slate-100/80 dark:hover:from-slate-800/80 dark:hover:to-slate-800/50 transition-all group cursor-pointer">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300"
-                                        :class="open ? 'bg-cyan-500/10 border border-cyan-500/20' : 'bg-slate-200/50 dark:bg-slate-700/50 border border-slate-300/50 dark:border-slate-600/50'">
-                                        <svg class="w-4 h-4 transition-colors duration-300" :class="open ? 'text-cyan-500' : 'text-slate-400 dark:text-slate-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button @click="open = !open" class="w-full flex items-center justify-between gap-2 px-3 py-1.5 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800/60 dark:to-slate-800/30 hover:from-slate-200/80 hover:to-slate-100/80 dark:hover:from-slate-800/80 dark:hover:to-slate-800/50 transition-all group cursor-pointer">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                                        :class="open ? 'bg-cyan-500/10' : 'bg-slate-200/50 dark:bg-slate-700/50'">
+                                        <svg class="w-3 h-3 transition-colors duration-300" :class="open ? 'text-cyan-500' : 'text-slate-400 dark:text-slate-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             @if($roomName === 'Belum Ditentukan')
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             @else
@@ -178,16 +178,14 @@
                                             @endif
                                         </svg>
                                     </div>
-                                    <div class="text-left min-w-0">
-                                        <h4 class="text-sm font-bold truncate transition-colors duration-200" :class="open ? 'text-cyan-700 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300'">{{ $roomName }}</h4>
-                                    </div>
+                                    <h4 class="text-xs font-bold truncate transition-colors duration-200" :class="open ? 'text-cyan-700 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300'">{{ $roomName }}</h4>
                                 </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
-                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black tabular-nums transition-all duration-300"
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black tabular-nums transition-all duration-300"
                                         :class="open ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20' : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-300/50 dark:border-slate-600/50'">
-                                        {{ $roomDevices->count() }} Perangkat
+                                        {{ $roomDevices->count() }}
                                     </span>
-                                    <svg class="w-4 h-4 transition-all duration-300 text-slate-400 dark:text-slate-600" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    <svg class="w-3 h-3 transition-all duration-300 text-slate-400 dark:text-slate-600" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                 </div>
                             </button>
 
