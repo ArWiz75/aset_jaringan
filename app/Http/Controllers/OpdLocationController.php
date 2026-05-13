@@ -83,7 +83,12 @@ class OpdLocationController extends Controller
         $devices = $deviceQuery->orderBy('merk')->get();
         $pemasanganList = $opdLocation->devices()->whereNotNull('lokasi_pemasangan')->distinct()->pluck('lokasi_pemasangan');
 
-        return view('opd-locations.show', compact('opdLocation', 'devices', 'pemasanganList'));
+        // Group devices by lokasi_pemasangan (room)
+        $groupedDevices = $devices->groupBy(function ($device) {
+            return $device->lokasi_pemasangan ?: 'Belum Ditentukan';
+        })->sortKeys();
+
+        return view('opd-locations.show', compact('opdLocation', 'devices', 'pemasanganList', 'groupedDevices'));
     }
 
     public function edit(OpdLocation $opdLocation)

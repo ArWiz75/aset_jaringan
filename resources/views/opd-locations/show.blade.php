@@ -153,55 +153,102 @@
                         @endif
                     </div>
                 </div>
-                <div class="space-y-2 flex-1">
-                    @forelse($devices as $device)
-                    @php
-                        $typeLower = strtolower($device->tipe);
-                        $bgClasses = [
-                            'router' => 'from-cyan-500/10 to-blue-600/5 border-cyan-500/20',
-                            'switch' => 'from-indigo-500/10 to-indigo-600/5 border-indigo-500/20',
-                            'access point' => 'from-purple-500/10 to-purple-600/5 border-purple-500/20',
-                            'modem' => 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20',
-                            'server' => 'from-amber-500/10 to-amber-600/5 border-amber-500/20',
-                            'firewall' => 'from-rose-500/10 to-rose-600/5 border-rose-500/20',
-                            'lainnya' => 'from-slate-500/10 to-slate-600/5 border-slate-500/20',
-                        ];
-                        $bgClass = $bgClasses[$typeLower] ?? $bgClasses['lainnya'];
-                    @endphp
-                    <a href="{{ route('devices.show', ['device' => $device->id, 'from' => 'opd']) }}" class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800/50 transition-all border border-slate-200/50 dark:border-slate-700/30 hover:border-cyan-500/30 group shadow-sm">
-                        <div class="flex items-center gap-3 min-w-0">
-                            <div class="w-8 h-8 flex-shrink-0 rounded-lg bg-gradient-to-br {{ $bgClass }} flex items-center justify-center border group-hover:scale-105 transition-transform">
-                                <x-device-icon :type="$device->tipe" class="w-4 h-4" />
-                            </div>
-                            <div class="min-w-0">
-                                <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $device->merk }} {{ $device->model }}</h4>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{{ $device->tipe }}</span>
-                                    <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400">SN: {{ $device->nomor_seri ?? '-' }}</span>
-                                    <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                                    <span class="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 font-bold">{{ $device->ip_address ?? '-' }}</span>
-                                    @if($device->lokasi_pemasangan)
-                                    <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 truncate italic">{{ $device->lokasi_pemasangan }}</span>
-                                    @endif
+                <div class="space-y-4 flex-1">
+                    @if($devices->count() > 0)
+                        {{-- Toggle All Button --}}
+                        <div class="flex items-center justify-end" x-data>
+                            <button @click="$dispatch('toggle-all-rooms')" class="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 transition flex items-center gap-1 uppercase tracking-wider">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                Buka / Tutup Semua
+                            </button>
+                        </div>
+
+                        @foreach($groupedDevices as $roomName => $roomDevices)
+                        <div x-data="{ open: true }" @toggle-all-rooms.window="open = !open" class="rounded-2xl border border-slate-200/70 dark:border-slate-700/40 overflow-hidden transition-all duration-300 shadow-sm">
+                            {{-- Room Header --}}
+                            <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800/60 dark:to-slate-800/30 hover:from-slate-200/80 hover:to-slate-100/80 dark:hover:from-slate-800/80 dark:hover:to-slate-800/50 transition-all group cursor-pointer">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                                        :class="open ? 'bg-cyan-500/10 border border-cyan-500/20' : 'bg-slate-200/50 dark:bg-slate-700/50 border border-slate-300/50 dark:border-slate-600/50'">
+                                        <svg class="w-4 h-4 transition-colors duration-300" :class="open ? 'text-cyan-500' : 'text-slate-400 dark:text-slate-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            @if($roomName === 'Belum Ditentukan')
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            @else
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            @endif
+                                        </svg>
+                                    </div>
+                                    <div class="text-left min-w-0">
+                                        <h4 class="text-sm font-bold truncate transition-colors duration-200" :class="open ? 'text-cyan-700 dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300'">{{ $roomName }}</h4>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black tabular-nums transition-all duration-300"
+                                        :class="open ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20' : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-300/50 dark:border-slate-600/50'">
+                                        {{ $roomDevices->count() }} Perangkat
+                                    </span>
+                                    <svg class="w-4 h-4 transition-all duration-300 text-slate-400 dark:text-slate-600" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                            </button>
+
+                            {{-- Room Devices --}}
+                            <div x-show="open"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 -translate-y-1">
+                                <div class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                    @foreach($roomDevices as $device)
+                                    @php
+                                        $typeLower = strtolower($device->tipe);
+                                        $bgClasses = [
+                                            'router' => 'from-cyan-500/10 to-blue-600/5 border-cyan-500/20',
+                                            'switch' => 'from-indigo-500/10 to-indigo-600/5 border-indigo-500/20',
+                                            'access point' => 'from-purple-500/10 to-purple-600/5 border-purple-500/20',
+                                            'modem' => 'from-emerald-500/10 to-emerald-600/5 border-emerald-500/20',
+                                            'server' => 'from-amber-500/10 to-amber-600/5 border-amber-500/20',
+                                            'firewall' => 'from-rose-500/10 to-rose-600/5 border-rose-500/20',
+                                            'lainnya' => 'from-slate-500/10 to-slate-600/5 border-slate-500/20',
+                                        ];
+                                        $bgClass = $bgClasses[$typeLower] ?? $bgClasses['lainnya'];
+                                    @endphp
+                                    <a href="{{ route('devices.show', ['device' => $device->id, 'from' => 'opd']) }}" class="flex items-center justify-between gap-3 px-4 py-2.5 bg-white dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <div class="w-8 h-8 flex-shrink-0 rounded-lg bg-gradient-to-br {{ $bgClass }} flex items-center justify-center border group-hover:scale-105 transition-transform">
+                                                <x-device-icon :type="$device->tipe" class="w-4 h-4" />
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $device->merk }} {{ $device->model }}</h4>
+                                                <div class="flex items-center gap-2 mt-0.5">
+                                                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{{ $device->tipe }}</span>
+                                                    <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                                    <span class="text-[10px] font-medium text-slate-500 dark:text-slate-400">SN: {{ $device->nomor_seri ?? '-' }}</span>
+                                                    <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                                    <span class="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 font-bold">{{ $device->ip_address ?? '-' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3 flex-shrink-0">
+                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm
+                                                {{ $device->status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : ($device->status === 'Rusak' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20') }}">
+                                                {{ $device->status }}
+                                            </span>
+                                            <svg class="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-cyan-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                        </div>
+                                    </a>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 flex-shrink-0">
-                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm
-                                {{ $device->status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : ($device->status === 'Rusak' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20') }}">
-                                {{ $device->status }}
-                            </span>
-                            <svg class="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-cyan-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                    </a>
-                    @empty
+                        @endforeach
+                    @else
                     <div class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-800/10 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700/50">
                         <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
                         <p class="text-sm font-medium italic">Belum ada perangkat terdaftar di lokasi ini</p>
                     </div>
-                    @endforelse
+                    @endif
                 </div>
             </div>
         </div>
