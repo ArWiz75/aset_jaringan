@@ -6,13 +6,13 @@
             <h1 class="text-2xl font-bold text-slate-900 dark:text-white mt-2">{{ $opdLocation->nama }}</h1>
         </div>
         <div class="flex gap-2">
-            <a href="{{ route('export.devices.print', ['opd_location_id' => $opdLocation->id]) }}" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-600/50 hover:bg-slate-200 dark:hover:bg-slate-600/50 text-sm font-medium transition flex items-center gap-1.5">
+            <a href="{{ route('export.devices.print', ['opd_location_id' => $opdLocation->id, 'lokasi' => request('lokasi')]) }}" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-600/50 hover:bg-slate-200 dark:hover:bg-slate-600/50 text-sm font-medium transition flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg> Cetak
             </a>
-            <a href="{{ route('export.devices.pdf', ['opd_location_id' => $opdLocation->id]) }}" class="px-4 py-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 hover:bg-red-500/20 text-sm font-medium transition flex items-center gap-1.5">
+            <a href="{{ route('export.devices.pdf', ['opd_location_id' => $opdLocation->id, 'lokasi' => request('lokasi')]) }}" class="px-4 py-2 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 hover:bg-red-500/20 text-sm font-medium transition flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg> PDF
             </a>
-            <a href="{{ route('export.devices.excel', ['opd_location_id' => $opdLocation->id]) }}" class="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 text-sm font-medium transition flex items-center gap-1.5">
+            <a href="{{ route('export.devices.excel', ['opd_location_id' => $opdLocation->id, 'lokasi' => request('lokasi')]) }}" class="px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 text-sm font-medium transition flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"></path></svg> Excel
             </a>
         </div>
@@ -129,20 +129,32 @@
         {{-- Right Column: Perangkat --}}
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white dark:bg-slate-900/50 backdrop-blur border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 shadow-sm dark:shadow-xl h-full flex flex-col">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Daftar Perangkat</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Total: {{ $opdLocation->devices->count() }} Perangkat</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Total: {{ $devices->count() }} Perangkat</p>
                     </div>
-                    @if(auth()->check() && auth()->user()->isAdmin())
-                    <a href="{{ route('devices.create', ['opd_location_id' => $opdLocation->id]) }}" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold hover:shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                        Tambah Perangkat
-                    </a>
-                    @endif
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        {{-- Filter Lokasi Pemasangan --}}
+                        <form method="GET" class="flex items-center gap-2">
+                            <select name="lokasi" onchange="this.form.submit()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm">
+                                <option value="">Semua Lokasi / Ruang</option>
+                                @foreach($pemasanganList as $loc)
+                                <option value="{{ $loc }}" {{ request('lokasi') == $loc ? 'selected' : '' }}>{{ $loc }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                        
+                        @if(auth()->check() && auth()->user()->isAdmin())
+                        <a href="{{ route('devices.create', ['opd_location_id' => $opdLocation->id]) }}" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-bold hover:shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center gap-2 active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                            Tambah Perangkat
+                        </a>
+                        @endif
+                    </div>
                 </div>
                 <div class="space-y-2 flex-1">
-                    @forelse($opdLocation->devices as $device)
+                    @forelse($devices as $device)
                     @php
                         $typeLower = strtolower($device->tipe);
                         $bgClasses = [

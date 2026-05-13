@@ -70,10 +70,20 @@ class OpdLocationController extends Controller
             ->with('success', 'Lokasi OPD berhasil ditambahkan.');
     }
 
-    public function show(OpdLocation $opdLocation)
+    public function show(Request $request, OpdLocation $opdLocation)
     {
-        $opdLocation->load(['devices', 'networks']);
-        return view('opd-locations.show', compact('opdLocation'));
+        $opdLocation->load(['networks']);
+        
+        $deviceQuery = $opdLocation->devices();
+        
+        if ($request->filled('lokasi')) {
+            $deviceQuery->where('lokasi_pemasangan', $request->lokasi);
+        }
+        
+        $devices = $deviceQuery->orderBy('merk')->get();
+        $pemasanganList = $opdLocation->devices()->whereNotNull('lokasi_pemasangan')->distinct()->pluck('lokasi_pemasangan');
+
+        return view('opd-locations.show', compact('opdLocation', 'devices', 'pemasanganList'));
     }
 
     public function edit(OpdLocation $opdLocation)

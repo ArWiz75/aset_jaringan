@@ -29,6 +29,9 @@ class ExportController extends Controller
         if ($request->filled('opd_location_id')) {
             $query->where('opd_location_id', $request->opd_location_id);
         }
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi_pemasangan', $request->lokasi);
+        }
 
         $devices = $query->orderBy('merk')->get();
         $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
@@ -51,6 +54,9 @@ class ExportController extends Controller
         }
         if ($request->filled('opd_location_id')) {
             $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi_pemasangan', $request->lokasi);
         }
 
         $devices = $query->orderBy('merk')->get();
@@ -226,6 +232,9 @@ class ExportController extends Controller
         }
         if ($request->filled('opd_location_id')) {
             $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi_pemasangan', $request->lokasi);
         }
 
         $devices = $query->orderBy('merk')->get();
