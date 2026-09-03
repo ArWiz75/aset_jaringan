@@ -165,95 +165,73 @@
 
                         @php
                             $roomThemes = [
-                                [ // 0: Sky / Biru Cerah
-                                    'border'    => 'border-sky-200 dark:border-sky-800/40 border-l-4 border-l-sky-500',
-                                    'header_bg' => 'bg-gradient-to-r from-sky-50 via-sky-50/50 to-white dark:from-sky-950/40 dark:to-slate-900/40 hover:from-sky-100/80 hover:to-sky-50 dark:hover:from-sky-900/50',
-                                    'icon_bg'   => 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
-                                    'title'     => 'text-sky-900 dark:text-sky-300',
-                                    'badge'     => 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300 border border-sky-300/60 dark:border-sky-700/60',
-                                    'chevron'   => 'text-sky-500 dark:text-sky-400',
+                                [ // 0: Royal Blue
+                                    'gradient'   => 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #38bdf8 100%)',
+                                    'accent'     => '#2563eb',
+                                    'border'     => '#3b82f6',
+                                    'glow'       => 'rgba(37, 99, 235, 0.15)',
                                 ],
-                                [ // 1: Emerald / Hijau
-                                    'border'    => 'border-emerald-200 dark:border-emerald-800/40 border-l-4 border-l-emerald-500',
-                                    'header_bg' => 'bg-gradient-to-r from-emerald-50 via-emerald-50/50 to-white dark:from-emerald-950/40 dark:to-slate-900/40 hover:from-emerald-100/80 hover:to-emerald-50 dark:hover:from-emerald-900/50',
-                                    'icon_bg'   => 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
-                                    'title'     => 'text-emerald-900 dark:text-emerald-300',
-                                    'badge'     => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60',
-                                    'chevron'   => 'text-emerald-500 dark:text-emerald-400',
+                                [ // 1: Emerald Green
+                                    'gradient'   => 'linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%)',
+                                    'accent'     => '#059669',
+                                    'border'     => '#10b981',
+                                    'glow'       => 'rgba(16, 185, 129, 0.15)',
                                 ],
-                                [ // 2: Purple / Ungu
-                                    'border'    => 'border-purple-200 dark:border-purple-800/40 border-l-4 border-l-purple-500',
-                                    'header_bg' => 'bg-gradient-to-r from-purple-50 via-purple-50/50 to-white dark:from-purple-950/40 dark:to-slate-900/40 hover:from-purple-100/80 hover:to-purple-50 dark:hover:from-purple-900/50',
-                                    'icon_bg'   => 'bg-purple-500/15 text-purple-600 dark:text-purple-400',
-                                    'title'     => 'text-purple-900 dark:text-purple-300',
-                                    'badge'     => 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-300/60 dark:border-purple-700/60',
-                                    'chevron'   => 'text-purple-500 dark:text-purple-400',
+                                [ // 2: Purple Violet
+                                    'gradient'   => 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #c084fc 100%)',
+                                    'accent'     => '#7c3aed',
+                                    'border'     => '#8b5cf6',
+                                    'glow'       => 'rgba(139, 92, 246, 0.15)',
                                 ],
-                                [ // 3: Amber / Kuning Emas
-                                    'border'    => 'border-amber-200 dark:border-amber-800/40 border-l-4 border-l-amber-500',
-                                    'header_bg' => 'bg-gradient-to-r from-amber-50 via-amber-50/50 to-white dark:from-amber-950/40 dark:to-slate-900/40 hover:from-amber-100/80 hover:to-amber-50 dark:hover:from-amber-900/50',
-                                    'icon_bg'   => 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-                                    'title'     => 'text-amber-900 dark:text-amber-300',
-                                    'badge'     => 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60',
-                                    'chevron'   => 'text-amber-500 dark:text-amber-400',
+                                [ // 3: Amber / Golden Orange
+                                    'gradient'   => 'linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%)',
+                                    'accent'     => '#d97706',
+                                    'border'     => '#f59e0b',
+                                    'glow'       => 'rgba(245, 158, 11, 0.15)',
                                 ],
-                                [ // 4: Rose / Merah Muda
-                                    'border'    => 'border-rose-200 dark:border-rose-800/40 border-l-4 border-l-rose-500',
-                                    'header_bg' => 'bg-gradient-to-r from-rose-50 via-rose-50/50 to-white dark:from-rose-950/40 dark:to-slate-900/40 hover:from-rose-100/80 hover:to-rose-50 dark:hover:from-rose-900/50',
-                                    'icon_bg'   => 'bg-rose-500/15 text-rose-600 dark:text-rose-400',
-                                    'title'     => 'text-rose-900 dark:text-rose-300',
-                                    'badge'     => 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300 border border-rose-300/60 dark:border-rose-700/60',
-                                    'chevron'   => 'text-rose-500 dark:text-rose-400',
+                                [ // 4: Crimson Rose / Pink
+                                    'gradient'   => 'linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #fb7185 100%)',
+                                    'accent'     => '#e11d48',
+                                    'border'     => '#f43f5e',
+                                    'glow'       => 'rgba(244, 63, 94, 0.15)',
                                 ],
-                                [ // 5: Indigo / Nila
-                                    'border'    => 'border-indigo-200 dark:border-indigo-800/40 border-l-4 border-l-indigo-500',
-                                    'header_bg' => 'bg-gradient-to-r from-indigo-50 via-indigo-50/50 to-white dark:from-indigo-950/40 dark:to-slate-900/40 hover:from-indigo-100/80 hover:to-indigo-50 dark:hover:from-indigo-900/50',
-                                    'icon_bg'   => 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400',
-                                    'title'     => 'text-indigo-900 dark:text-indigo-300',
-                                    'badge'     => 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60',
-                                    'chevron'   => 'text-indigo-500 dark:text-indigo-400',
+                                [ // 5: Indigo Electric
+                                    'gradient'   => 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%)',
+                                    'accent'     => '#4f46e5',
+                                    'border'     => '#6366f1',
+                                    'glow'       => 'rgba(99, 102, 241, 0.15)',
                                 ],
-                                [ // 6: Teal / Hijau Laut
-                                    'border'    => 'border-teal-200 dark:border-teal-800/40 border-l-4 border-l-teal-500',
-                                    'header_bg' => 'bg-gradient-to-r from-teal-50 via-teal-50/50 to-white dark:from-teal-950/40 dark:to-slate-900/40 hover:from-teal-100/80 hover:to-teal-50 dark:hover:from-teal-900/50',
-                                    'icon_bg'   => 'bg-teal-500/15 text-teal-600 dark:text-teal-400',
-                                    'title'     => 'text-teal-900 dark:text-teal-300',
-                                    'badge'     => 'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300 border border-teal-300/60 dark:border-teal-700/60',
-                                    'chevron'   => 'text-teal-500 dark:text-teal-400',
+                                [ // 6: Deep Teal
+                                    'gradient'   => 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)',
+                                    'accent'     => '#0d9488',
+                                    'border'     => '#14b8a6',
+                                    'glow'       => 'rgba(20, 184, 166, 0.15)',
                                 ],
-                                [ // 7: Orange / Jingga
-                                    'border'    => 'border-orange-200 dark:border-orange-800/40 border-l-4 border-l-orange-500',
-                                    'header_bg' => 'bg-gradient-to-r from-orange-50 via-orange-50/50 to-white dark:from-orange-950/40 dark:to-slate-900/40 hover:from-orange-100/80 hover:to-orange-50 dark:hover:from-orange-900/50',
-                                    'icon_bg'   => 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
-                                    'title'     => 'text-orange-900 dark:text-orange-300',
-                                    'badge'     => 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300 border border-orange-300/60 dark:border-orange-700/60',
-                                    'chevron'   => 'text-orange-500 dark:text-orange-400',
+                                [ // 7: Bright Orange / Coral
+                                    'gradient'   => 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%)',
+                                    'accent'     => '#ea580c',
+                                    'border'     => '#f97316',
+                                    'glow'       => 'rgba(249, 115, 22, 0.15)',
                                 ],
-                                [ // 8: Fuchsia / Magenta
-                                    'border'    => 'border-fuchsia-200 dark:border-fuchsia-800/40 border-l-4 border-l-fuchsia-500',
-                                    'header_bg' => 'bg-gradient-to-r from-fuchsia-50 via-fuchsia-50/50 to-white dark:from-fuchsia-950/40 dark:to-slate-900/40 hover:from-fuchsia-100/80 hover:to-fuchsia-50 dark:hover:from-fuchsia-900/50',
-                                    'icon_bg'   => 'bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400',
-                                    'title'     => 'text-fuchsia-900 dark:text-fuchsia-300',
-                                    'badge'     => 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/50 dark:text-fuchsia-300 border border-fuchsia-300/60 dark:border-fuchsia-700/60',
-                                    'chevron'   => 'text-fuchsia-500 dark:text-fuchsia-400',
+                                [ // 8: Vivid Magenta / Fuchsia
+                                    'gradient'   => 'linear-gradient(135deg, #c026d3 0%, #d946ef 50%, #f472b6 100%)',
+                                    'accent'     => '#c026d3',
+                                    'border'     => '#d946ef',
+                                    'glow'       => 'rgba(217, 70, 239, 0.15)',
                                 ],
-                                [ // 9: Cyan / Biru Laut
-                                    'border'    => 'border-cyan-200 dark:border-cyan-800/40 border-l-4 border-l-cyan-500',
-                                    'header_bg' => 'bg-gradient-to-r from-cyan-50 via-cyan-50/50 to-white dark:from-cyan-950/40 dark:to-slate-900/40 hover:from-cyan-100/80 hover:to-cyan-50 dark:hover:from-cyan-900/50',
-                                    'icon_bg'   => 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400',
-                                    'title'     => 'text-cyan-900 dark:text-cyan-300',
-                                    'badge'     => 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300 border border-cyan-300/60 dark:border-cyan-700/60',
-                                    'chevron'   => 'text-cyan-500 dark:text-cyan-400',
+                                [ // 9: Vibrant Cyan / Sky
+                                    'gradient'   => 'linear-gradient(135deg, #0284c7 0%, #06b6d4 50%, #38bdf8 100%)',
+                                    'accent'     => '#0284c7',
+                                    'border'     => '#06b6d4',
+                                    'glow'       => 'rgba(6, 182, 212, 0.15)',
                                 ],
                             ];
 
                             $neutralTheme = [
-                                'border'    => 'border-slate-200 dark:border-slate-700/50 border-l-4 border-l-slate-400',
-                                'header_bg' => 'bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800/60 dark:to-slate-800/30 hover:from-slate-200/80 hover:to-slate-100/80',
-                                'icon_bg'   => 'bg-slate-200/80 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400',
-                                'title'     => 'text-slate-700 dark:text-slate-300',
-                                'badge'     => 'bg-slate-200/60 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300 border border-slate-300/50 dark:border-slate-600/50',
-                                'chevron'   => 'text-slate-400 dark:text-slate-500',
+                                'gradient'   => 'linear-gradient(135deg, #475569 0%, #64748b 50%, #94a3b8 100%)',
+                                'accent'     => '#64748b',
+                                'border'     => '#94a3b8',
+                                'glow'       => 'rgba(100, 116, 139, 0.15)',
                             ];
                         @endphp
 
@@ -261,26 +239,34 @@
                         @php
                             $theme = ($roomName === 'Belum Ditentukan') ? $neutralTheme : $roomThemes[$loop->index % count($roomThemes)];
                         @endphp
-                        <div x-data="{ open: true }" @toggle-all-rooms.window="open = !open" class="rounded-2xl border {{ $theme['border'] }} overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md">
-                            {{-- Room Header --}}
-                            <button @click="open = !open" class="w-full flex items-center justify-between gap-2 px-3.5 py-2 {{ $theme['header_bg'] }} transition-all group cursor-pointer">
-                                <div class="flex items-center gap-2.5 min-w-0">
-                                    <div class="w-6 h-6 rounded-lg {{ $theme['icon_bg'] }} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div x-data="{ open: true }" @toggle-all-rooms.window="open = !open"
+                             class="rounded-xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md"
+                             style="border: 2px solid {{ $theme['border'] }}44; border-left: 6px solid {{ $theme['accent'] }};">
+                            {{-- Room Header (Vibrant & Mencolok) --}}
+                            <button @click="open = !open"
+                                    class="w-full flex items-center justify-between gap-3 px-4 py-3 transition-all cursor-pointer select-none text-white hover:brightness-105 active:scale-[0.99]"
+                                    style="background: {{ $theme['gradient'] }}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform duration-200"
+                                         style="background: rgba(255, 255, 255, 0.22); backdrop-filter: blur(4px); box-shadow: inset 0 1px 1px rgba(255,255,255,0.3);">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             @if($roomName === 'Belum Ditentukan')
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             @else
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                             @endif
                                         </svg>
                                     </div>
-                                    <h4 class="text-xs font-bold truncate {{ $theme['title'] }}">{{ $roomName }}</h4>
+                                    <h4 class="text-sm font-black tracking-wider uppercase text-white truncate" style="text-shadow: 0 1px 2px rgba(0,0,0,0.25);">
+                                        {{ $roomName }}
+                                    </h4>
                                 </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black tabular-nums {{ $theme['badge'] }}">
+                                <div class="flex items-center gap-2.5 flex-shrink-0">
+                                    <span class="px-3 py-1 rounded-full text-xs font-black text-white tabular-nums"
+                                          style="background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.4); text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                         {{ $roomDevices->count() }} perangkat
                                     </span>
-                                    <svg class="w-3.5 h-3.5 transition-transform duration-300 {{ $theme['chevron'] }}" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                    <svg class="w-4 h-4 text-white/90 transition-transform duration-300 drop-shadow" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                                 </div>
                             </button>
 
