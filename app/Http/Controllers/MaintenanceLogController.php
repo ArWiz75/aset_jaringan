@@ -90,7 +90,7 @@ class MaintenanceLogController extends Controller
         $maintenanceLog->update($validated);
 
         return redirect()->route('maintenance-logs.index')
-            ->with('success', 'Log maintenance berhasil diperbarui.');
+            ->with('success', 'Data sudah berhasil dirubah.');
     }
 
     public function destroy(MaintenanceLog $maintenanceLog)

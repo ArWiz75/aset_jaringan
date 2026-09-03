@@ -136,7 +136,7 @@ class OpdLocationController extends Controller
         }
 
         return redirect()->route('opd-locations.index')
-            ->with('success', 'Lokasi OPD berhasil diperbarui.');
+            ->with('success', 'Data sudah berhasil dirubah.');
     }
 
     public function destroy(OpdLocation $opdLocation)

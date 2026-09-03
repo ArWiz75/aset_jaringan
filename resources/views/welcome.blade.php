@@ -258,10 +258,7 @@
             @auth
                 <a href="{{ route('dashboard') }}" class="nav-btn">Dashboard →</a>
             @else
-                <a href="{{ route('login') }}" class="nav-link">Masuk</a>
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="nav-btn">Daftar</a>
-                @endif
+                <a href="{{ route('login') }}" class="nav-btn">Masuk</a>
             @endauth
         </div>
     </nav>

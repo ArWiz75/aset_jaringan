@@ -125,11 +125,11 @@ class DeviceController extends Controller
 
         if ($request->has('redirect_to_opd')) {
             return redirect()->route('opd-locations.show', $request->redirect_to_opd)
-                ->with('success', 'Perangkat berhasil diperbarui.');
+                ->with('success', 'Data sudah berhasil dirubah.');
         }
 
         return redirect()->route('devices.index')
-            ->with('success', 'Perangkat berhasil diperbarui.');
+            ->with('success', 'Data sudah berhasil dirubah.');
     }
 
     public function destroy(Request $request, Device $device)

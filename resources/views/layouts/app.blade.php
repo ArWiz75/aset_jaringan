@@ -183,13 +183,109 @@
         /* Content area */
         .app-content { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
 
-        /* Flash message */
-        .flash-success {
-            margin: 0 1.5rem 1rem; padding: 1rem; border-radius: 8px;
-            background-color: #ecfdf5; border: 1px solid #34d399;
-            color: #065f46; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 99999;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            min-width: 320px;
+            max-width: 440px;
+            padding: 1rem 1.25rem 1.15rem;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
         }
-        .flash-success svg { width: 18px; height: 18px; flex-shrink: 0; color: #059669; }
+        .toast-notification.toast-hide {
+            opacity: 0;
+            transform: translateX(110%);
+        }
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(110%) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .toast-notification.toast-success {
+            border-left: 5px solid #10b981;
+        }
+        .toast-notification.toast-error {
+            border-left: 5px solid #ef4444;
+        }
+        .toast-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .toast-success .toast-icon {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        .toast-error .toast-icon {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .toast-body {
+            flex: 1;
+        }
+        .toast-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        .toast-message {
+            font-size: 0.825rem;
+            color: #475569;
+            margin-top: 0.25rem;
+            line-height: 1.4;
+        }
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            margin-top: -2px;
+            margin-right: -4px;
+        }
+        .toast-close:hover {
+            color: #1e293b;
+            background: #f1f5f9;
+        }
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            animation: toastProgress 4.5s linear forwards;
+        }
+        .toast-success .toast-progress {
+            background: #10b981;
+        }
+        .toast-error .toast-progress {
+            background: #ef4444;
+        }
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
 
         /* Overlay */
         .sidebar-overlay {
@@ -282,13 +378,39 @@
             </div>
         </header>
 
-        {{-- Flash Messages --}}
-        @if(session('success'))
-            <div class="flash-success" id="flashMsg">
-                <svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                {{ session('success') }}
+        {{-- Toast Notification --}}
+        @if(session('success') || session('status') || session('error'))
+            @php
+                $isError = session()->has('error');
+                $message = session('success') ?? session('status') ?? session('error');
+            @endphp
+            <div id="toastNotification" class="toast-notification {{ $isError ? 'toast-error' : 'toast-success' }}" role="alert">
+                <div class="toast-icon">
+                    @if($isError)
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    @else
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    @endif
+                </div>
+                <div class="toast-body">
+                    <div class="toast-title">{{ $isError ? 'Terjadi Kesalahan' : 'Berhasil!' }}</div>
+                    <div class="toast-message">{{ $message }}</div>
+                </div>
+                <button type="button" class="toast-close" onclick="closeToast()" title="Tutup">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <div class="toast-progress"></div>
             </div>
-            <script>setTimeout(() => { const el = document.getElementById('flashMsg'); if(el) el.style.display='none'; }, 4000);</script>
+            <script>
+                function closeToast() {
+                    const el = document.getElementById('toastNotification');
+                    if (el) {
+                        el.classList.add('toast-hide');
+                        setTimeout(() => { if (el) el.remove(); }, 300);
+                    }
+                }
+                setTimeout(closeToast, 4500);
+            </script>
         @endif
 
         <main class="app-content">
