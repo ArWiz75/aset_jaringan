@@ -257,8 +257,6 @@
         <div class="nav-links">
             @auth
                 <a href="{{ route('dashboard') }}" class="nav-btn">Dashboard →</a>
-            @else
-                <a href="{{ route('login') }}" class="nav-btn">Masuk</a>
             @endauth
         </div>
     </nav>
