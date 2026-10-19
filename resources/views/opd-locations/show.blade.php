@@ -293,13 +293,13 @@
                                         ];
                                         $bgClass = $bgClasses[$typeLower] ?? $bgClasses['lainnya'];
                                     @endphp
-                                    <a href="{{ route('devices.show', ['device' => $device->id, 'from' => 'opd']) }}" class="flex items-center justify-between gap-3 px-4 py-2.5 bg-white dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
+                                    <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-white dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <div class="w-8 h-8 flex-shrink-0 rounded-lg bg-gradient-to-br {{ $bgClass }} flex items-center justify-center border group-hover:scale-105 transition-transform">
                                                 <x-device-icon :type="$device->tipe" class="w-4 h-4" />
                                             </div>
                                             <div class="min-w-0">
-                                                <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">{{ $device->merk }} {{ $device->model }}</h4>
+                                                <h4 class="text-sm font-bold text-slate-800 dark:text-white truncate transition-colors">{{ $device->merk }} {{ $device->model }}</h4>
                                                 <div class="flex items-center gap-2 mt-0.5">
                                                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{{ $device->tipe }}</span>
                                                     <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
@@ -309,14 +309,29 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex items-center gap-3 flex-shrink-0">
-                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-sm mr-2
                                                 {{ $device->status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : ($device->status === 'Rusak' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20') }}">
                                                 {{ $device->status }}
                                             </span>
-                                            <svg class="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-cyan-500 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                            <a href="{{ route('devices.show', ['device' => $device->id, 'from' => 'opd']) }}" title="Lihat" class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 transition-all">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            </a>
+                                            @if(auth()->check() && auth()->user()->isAdmin())
+                                            <a href="{{ route('devices.edit', ['device' => $device->id, 'from' => 'opd']) }}" title="Edit" class="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                            </a>
+                                            <form action="{{ route('devices.destroy', $device->id) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus perangkat ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <input type="hidden" name="redirect_to_opd" value="{{ $opdLocation->id }}">
+                                                <button type="submit" title="Hapus" class="p-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-all flex items-center justify-center">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                </button>
+                                            </form>
+                                            @endif
                                         </div>
-                                    </a>
+                                    </div>
                                     @endforeach
                                 </div>
                             </div>
