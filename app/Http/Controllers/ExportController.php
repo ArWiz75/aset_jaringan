@@ -257,4 +257,185 @@ class ExportController extends Controller
         $logs = $query->orderBy('tanggal', 'desc')->get();
         return view('exports.maintenance-print', compact('logs'));
     }
+
+    /**
+     * Laporan Cetak Khusus Rekomendasi Penggantian & Perencanaan Pengadaan Perangkat
+     */
+    public function printReplacement(Request $request)
+    {
+        $query = Device::with('opdLocation');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            // Default: ambil yang Perlu Diganti atau Rusak jika diinginkan, default Perlu Diganti
+            $query->where('status', 'Perlu Diganti');
+        }
+
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        $devices = $query->orderBy('opd_location_id')->orderBy('merk')->get();
+        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $totalBiaya = $devices->sum('estimasi_biaya');
+        $totalOpd = $devices->pluck('opd_location_id')->unique()->count();
+
+        return view('exports.replacement-print', compact('devices', 'location', 'totalBiaya', 'totalOpd'));
+    }
+
+    /**
+     * Export PDF Rekomendasi Penggantian & Pengadaan Perangkat
+     */
+    public function exportReplacementPdf(Request $request)
+    {
+        $query = Device::with('opdLocation');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            $query->where('status', 'Perlu Diganti');
+        }
+
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        $devices = $query->orderBy('opd_location_id')->orderBy('merk')->get();
+        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $totalBiaya = $devices->sum('estimasi_biaya');
+        $totalOpd = $devices->pluck('opd_location_id')->unique()->count();
+
+        $pdf = Pdf::loadView('exports.replacement-pdf', compact('devices', 'location', 'totalBiaya', 'totalOpd'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('laporan-usulan-penggantian-perangkat-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Export Excel Perencanaan Pengadaan Perangkat Pengganti
+     */
+    public function exportReplacementExcel(Request $request)
+    {
+        $query = Device::with('opdLocation');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        } else {
+            $query->where('status', 'Perlu Diganti');
+        }
+
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        $devices = $query->orderBy('opd_location_id')->orderBy('merk')->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Rencana Penggantian Aset');
+
+        // Header Title
+        $sheet->setCellValue('A1', 'USULAN PERENCANAAN PENGGANTIAN DAN PENGADAAN PERANGKAT JARINGAN');
+        $sheet->setCellValue('A2', 'DINAS KOMUNIKASI DAN INFORMATIKA - Tanggal Cetak: ' . date('d F Y'));
+        $sheet->mergeCells('A1:L1');
+        $sheet->mergeCells('A2:L2');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getFont()->setSize(10)->getColor()->setRGB('64748B');
+
+        // Table Header
+        $headers = [
+            'No',
+            'Lokasi OPD',
+            'Ruang / Titik Pasang',
+            'Perangkat Saat Ini',
+            'Tipe',
+            'No. Seri',
+            'IP Address',
+            'Tgl Pasang / Umur',
+            'Kondisi Status',
+            'Alasan Penggantian (Pertimbangan Teknis)',
+            'Usulan / Rekomendasi Pengganti',
+            'Estimasi Biaya (Rp)'
+        ];
+
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '4', $header);
+            $col++;
+        }
+
+        $headerRange = 'A4:L4';
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('1E293B');
+        $sheet->getStyle($headerRange)->getFont()->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $row = 5;
+        $totalBiaya = 0;
+        foreach ($devices as $index => $device) {
+            $perangkatText = $device->merk . ($device->model ? ' (' . $device->model . ')' : '');
+            $umurText = ($device->tanggal_install ? $device->tanggal_install->format('d/m/Y') : '-') . 
+                        ($device->umur_perangkat ? ' (' . $device->umur_perangkat . ')' : '');
+
+            $sheet->setCellValue('A' . $row, $index + 1);
+            $sheet->setCellValue('B' . $row, $device->opdLocation->nama ?? '-');
+            $sheet->setCellValue('C' . $row, $device->lokasi_pemasangan ?? '-');
+            $sheet->setCellValue('D' . $row, $perangkatText);
+            $sheet->setCellValue('E' . $row, $device->tipe);
+            $sheet->setCellValue('F' . $row, $device->nomor_seri ?? '-');
+            $sheet->setCellValue('G' . $row, $device->ip_address ?? '-');
+            $sheet->setCellValue('H' . $row, $umurText);
+            $sheet->setCellValue('I' . $row, $device->status);
+            $sheet->setCellValue('J' . $row, $device->alasan_penggantian ?? $device->keterangan ?? '-');
+            $sheet->setCellValue('K' . $row, $device->rekomendasi_pengganti ?? '-');
+            $sheet->setCellValue('L' . $row, (float)($device->estimasi_biaya ?? 0));
+
+            $totalBiaya += (float)($device->estimasi_biaya ?? 0);
+            $row++;
+        }
+
+        // Summary Row
+        $sheet->setCellValue('A' . $row, 'TOTAL ESTIMASI KEBUTUHAN BIAYA');
+        $sheet->mergeCells('A' . $row . ':K' . $row);
+        $sheet->setCellValue('L' . $row, $totalBiaya);
+        $sheet->getStyle('A' . $row . ':L' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':K' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A' . $row . ':L' . $row)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('F1F5F9');
+
+        // Format Currency Column L
+        $sheet->getStyle('L5:L' . $row)->getNumberFormat()
+            ->setFormatCode('"Rp "#,##0');
+
+        // Auto-size columns
+        foreach (range('A', 'L') as $c) {
+            $sheet->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        // Border
+        $dataRange = 'A4:L' . $row;
+        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'laporan-pengadaan-penggantian-' . date('Y-m-d') . '.xlsx';
+        $tempFile = storage_path('app/' . $filename);
+        $writer->save($tempFile);
+
+        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+    }
 }
+

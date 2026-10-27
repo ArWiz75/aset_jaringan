@@ -15,6 +15,7 @@
         .status-aktif { color: #059669; font-weight: bold; }
         .status-rusak { color: #dc2626; font-weight: bold; }
         .status-maintenance { color: #d97706; font-weight: bold; }
+        .status-perlu-diganti { color: #7c3aed; font-weight: bold; }
         .status-nonaktif { color: #6b7280; }
         .footer { margin-top: 20px; text-align: right; font-size: 9px; color: #999; }
     </style>
@@ -61,7 +62,7 @@
                 <td>{{ $device->ip_address ?? '-' }}</td>
                 <td>{{ $device->opdLocation->nama ?? '-' }}</td>
                 <td>{{ $device->lokasi_pemasangan ?? '-' }}</td>
-                <td class="status-{{ strtolower($device->status) }}">{{ $device->status }}</td>
+                <td class="status-{{ \Illuminate\Support\Str::slug($device->status) }}">{{ $device->status }}</td>
                 <td>{{ $device->tanggal_install ? $device->tanggal_install->format('d/m/Y') : '-' }}</td>
             </tr>
             @endforeach

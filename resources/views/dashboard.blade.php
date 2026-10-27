@@ -21,8 +21,9 @@
             pointer-events: none;
         }
 
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; }
-        @media (max-width: 1024px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+        .stat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        @media (max-width: 1280px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr; } }
 
         .stat-value { font-size: 1.75rem; font-weight: 700; color: #0f172a; margin-top: 0.25rem; }
@@ -124,6 +125,34 @@
         </div>
     </div>
 
+    {{-- Alert Banner: Perangkat Perlu Diganti --}}
+    @if($replaceDevices > 0)
+    <div style="background-color: #faf5ff; border: 1px solid #d8b4fe; border-left: 4px solid #9333ea; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 38px; height: 38px; border-radius: 8px; background-color: #f3e8ff; color: #7e22ce; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                🔄
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: #581c87;">
+                    Terdapat {{ $replaceDevices }} Perangkat Direkomendasikan untuk Diganti
+                </div>
+                <div style="font-size: 0.8rem; color: #7e22ce;">
+                    Perangkat memerlukan pergantian segera untuk pertimbangan pimpinan dan perencanaan pengadaan perangkat pengganti.
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ route('export.devices.replacement.print') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 0.9rem; background-color: #7e22ce; color: white; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Cetak Usulan
+            </a>
+            <a href="{{ route('devices.index', ['status' => 'Perlu Diganti']) }}" style="display: inline-flex; align-items: center; padding: 0.45rem 0.9rem; background-color: #ffffff; color: #7e22ce; border: 1px solid #d8b4fe; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+                Lihat Daftar
+            </a>
+        </div>
+    </div>
+    @endif
+
     {{-- Stats Grid --}}
     <div class="stat-grid">
         <div class="dash-card">
@@ -150,6 +179,19 @@
                 </div>
             </div>
             <div class="stat-footer"><span style="color:#059669;">{{ $totalDevices > 0 ? round(($activeDevices/$totalDevices)*100) : 0 }}%</span> dari total perangkat</div>
+        </div>
+
+        <div class="dash-card">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1;">
+                <div>
+                    <div class="stat-label">Perlu Diganti</div>
+                    <div class="stat-value" style="color:#7e22ce;">{{ $replaceDevices }}</div>
+                </div>
+                <div class="stat-icon" style="background-color:#faf5ff;color:#7e22ce;">
+                    <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </div>
+            </div>
+            <div class="stat-footer"><a href="{{ route('devices.index', ['status' => 'Perlu Diganti']) }}" style="color:#7e22ce;font-weight:600;text-decoration:none;">Usulan pengadaan →</a></div>
         </div>
 
         <div class="dash-card">
@@ -270,7 +312,7 @@
     <script>
         const statusData = @json($devicesByStatus);
         const typeData = @json($devicesByType);
-        const statusColors = { 'Aktif': '#10b981', 'Rusak': '#e11d48', 'Maintenance': '#d97706', 'Nonaktif': '#94a3b8' };
+        const statusColors = { 'Aktif': '#10b981', 'Perlu Diganti': '#8b5cf6', 'Rusak': '#e11d48', 'Maintenance': '#d97706', 'Nonaktif': '#94a3b8' };
         const typeColors = ['#60a5fa','#a78bfa','#fbbf24','#34d399','#fb7185','#3b82f6'];
 
         Chart.defaults.color = '#64748b';

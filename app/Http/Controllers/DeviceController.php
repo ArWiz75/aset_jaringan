@@ -42,7 +42,16 @@ class DeviceController extends Controller
         $devices = $query->orderBy('created_at', 'desc')->paginate(15);
         $locations = OpdLocation::orderBy('nama')->get();
 
-        return view('devices.index', compact('devices', 'locations'));
+        $statusCounts = [
+            'total' => Device::count(),
+            'Aktif' => Device::where('status', 'Aktif')->count(),
+            'Perlu Diganti' => Device::where('status', 'Perlu Diganti')->count(),
+            'Rusak' => Device::where('status', 'Rusak')->count(),
+            'Maintenance' => Device::where('status', 'Maintenance')->count(),
+            'Nonaktif' => Device::where('status', 'Nonaktif')->count(),
+        ];
+
+        return view('devices.index', compact('devices', 'locations', 'statusCounts'));
     }
 
     public function create()
@@ -61,10 +70,13 @@ class DeviceController extends Controller
             'model' => 'nullable|string|max:255',
             'nomor_seri' => 'nullable|string|max:255|unique:devices',
             'ip_address' => 'nullable|string|max:45',
-            'status' => 'required|in:Aktif,Rusak,Maintenance,Nonaktif',
+            'status' => 'required|in:Aktif,Rusak,Maintenance,Perlu Diganti,Nonaktif',
             'mikrotik_backup_config' => 'nullable|string',
             'tanggal_install' => 'nullable|date',
             'tanggal_rusak' => 'required_if:status,Rusak|nullable|date',
+            'alasan_penggantian' => 'nullable|string',
+            'rekomendasi_pengganti' => 'nullable|string|max:255',
+            'estimasi_biaya' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'foto_perangkat' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:5120',
         ]);
@@ -106,10 +118,13 @@ class DeviceController extends Controller
             'model' => 'nullable|string|max:255',
             'nomor_seri' => 'nullable|string|max:255|unique:devices,nomor_seri,' . $device->id,
             'ip_address' => 'nullable|string|max:45',
-            'status' => 'required|in:Aktif,Rusak,Maintenance,Nonaktif',
+            'status' => 'required|in:Aktif,Rusak,Maintenance,Perlu Diganti,Nonaktif',
             'mikrotik_backup_config' => 'nullable|string',
             'tanggal_install' => 'nullable|date',
             'tanggal_rusak' => 'required_if:status,Rusak|nullable|date',
+            'alasan_penggantian' => 'nullable|string',
+            'rekomendasi_pengganti' => 'nullable|string|max:255',
+            'estimasi_biaya' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'foto_perangkat' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:5120',
         ]);
@@ -130,6 +145,24 @@ class DeviceController extends Controller
 
         return redirect()->route('devices.index')
             ->with('success', 'Data sudah berhasil dirubah.');
+    }
+
+    /**
+     * Update status penggantian perangkat dengan cepat (modal / quick action)
+     */
+    public function markReplacement(Request $request, Device $device)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Aktif,Rusak,Maintenance,Perlu Diganti,Nonaktif',
+            'alasan_penggantian' => 'nullable|string',
+            'rekomendasi_pengganti' => 'nullable|string|max:255',
+            'estimasi_biaya' => 'nullable|numeric|min:0',
+        ]);
+
+        $device->update($validated);
+
+        $statusText = $device->status === 'Perlu Diganti' ? 'direkomendasikan untuk diganti' : 'status berhasil diperbarui';
+        return back()->with('success', "Perangkat {$device->merk} {$device->model} {$statusText}.");
     }
 
     public function destroy(Request $request, Device $device)

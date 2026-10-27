@@ -52,7 +52,7 @@
         <div>
             <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Status <span class="text-red-500">*</span></label>
             <select name="status" id="status-select" required class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 focus:outline-none transition-all shadow-sm">
-                @foreach(['Aktif','Rusak','Maintenance','Nonaktif'] as $s)
+                @foreach(['Aktif','Rusak','Maintenance','Perlu Diganti','Nonaktif'] as $s)
                 <option value="{{ $s }}" {{ old('status', $d->status ?? 'Aktif') == $s ? 'selected' : '' }}>{{ $s }}</option>
                 @endforeach
             </select>
@@ -67,6 +67,47 @@
             <label class="block text-sm font-bold text-red-600 dark:text-red-400 mb-1.5">Tanggal Rusak <span class="text-red-500">*</span></label>
             <input type="date" name="tanggal_rusak" id="tanggal_rusak" value="{{ old('tanggal_rusak', isset($d) && $d->tanggal_rusak ? $d->tanggal_rusak->format('Y-m-d') : '') }}" class="w-full bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/50 rounded-xl px-4 py-2.5 text-sm text-red-900 dark:text-red-200 focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 focus:outline-none transition-all shadow-sm">
             @error('tanggal_rusak') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
+        </div>
+    </div>
+
+    {{-- Container Usulan & Rekomendasi Penggantian Perangkat --}}
+    <div id="replacement-container" class="p-5 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-4" style="{{ old('status', $d->status ?? 'Aktif') == 'Perlu Diganti' ? '' : 'display: none;' }}">
+        <div class="flex items-center gap-2 pb-3 border-b border-purple-500/10">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                🔄
+            </div>
+            <div>
+                <h4 class="text-sm font-bold text-purple-900 dark:text-purple-300">Rekomendasi Penggantian & Usulan Pengadaan</h4>
+                <p class="text-xs text-purple-700/80 dark:text-purple-400/80">Informasi pertimbangan untuk atasan dan perencanaan pengadaan perangkat pengganti</p>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Alasan Penggantian (Pertimbangan Teknis)
+            </label>
+            <textarea name="alasan_penggantian" id="alasan_penggantian" rows="2" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 focus:outline-none transition-all shadow-sm" placeholder="Contoh: Sering drop, port 3-4 mati, usia pakai melebihi 5 tahun, atau tidak mampu menangani beban traffic saat ini">{{ old('alasan_penggantian', $d->alasan_penggantian ?? '') }}</textarea>
+            @error('alasan_penggantian') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Usulan / Rekomendasi Tipe Pengganti
+                </label>
+                <input type="text" name="rekomendasi_pengganti" value="{{ old('rekomendasi_pengganti', $d->rekomendasi_pengganti ?? '') }}" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 focus:outline-none transition-all shadow-sm" placeholder="Contoh: MikroTik RB4011iGS+RM / Cisco CBS250">
+                @error('rekomendasi_pengganti') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Estimasi Biaya Pengadaan (Rp)
+                </label>
+                <div class="relative">
+                    <span class="absolute left-4 top-2.5 text-sm font-bold text-slate-400">Rp</span>
+                    <input type="number" step="0.01" name="estimasi_biaya" value="{{ old('estimasi_biaya', $d->estimasi_biaya ?? '') }}" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl pl-12 pr-4 py-2.5 text-sm font-mono font-bold text-slate-900 dark:text-white focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 focus:outline-none transition-all shadow-sm" placeholder="Contoh: 3500000">
+                </div>
+                @error('estimasi_biaya') <p class="text-red-500 text-[10px] font-bold mt-1.5">{{ $message }}</p> @enderror
+            </div>
         </div>
     </div>
     <div>
@@ -98,8 +139,9 @@
         const statusSelect = document.getElementById('status-select');
         const tanggalRusakContainer = document.getElementById('tanggal-rusak-container');
         const tanggalRusakInput = document.getElementById('tanggal_rusak');
+        const replacementContainer = document.getElementById('replacement-container');
 
-        function toggleTanggalRusak() {
+        function toggleStatusFields() {
             if (statusSelect.value === 'Rusak') {
                 tanggalRusakContainer.style.display = 'block';
                 tanggalRusakInput.setAttribute('required', 'required');
@@ -107,11 +149,15 @@
                 tanggalRusakContainer.style.display = 'none';
                 tanggalRusakInput.removeAttribute('required');
             }
+
+            if (statusSelect.value === 'Perlu Diganti') {
+                replacementContainer.style.display = 'block';
+            } else {
+                replacementContainer.style.display = 'none';
+            }
         }
 
-        statusSelect.addEventListener('change', toggleTanggalRusak);
-        
-        // Initial check
-        toggleTanggalRusak();
+        statusSelect.addEventListener('change', toggleStatusFields);
+        toggleStatusFields();
     });
 </script>

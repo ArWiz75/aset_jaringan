@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/devices/{device}/edit', [DeviceController::class, 'edit'])->name('devices.edit');
         Route::put('/devices/{device}', [DeviceController::class, 'update'])->name('devices.update');
         Route::delete('/devices/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
+        Route::post('/devices/{device}/mark-replacement', [DeviceController::class, 'markReplacement'])->name('devices.mark-replacement');
 
         Route::get('/opd-locations/create', [OpdLocationController::class, 'create'])->name('opd-locations.create');
         Route::post('/opd-locations', [OpdLocationController::class, 'store'])->name('opd-locations.store');
@@ -54,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/export/devices/pdf', [ExportController::class, 'exportDevicesPdf'])->name('export.devices.pdf');
     Route::get('/export/devices/excel', [ExportController::class, 'exportDevicesExcel'])->name('export.devices.excel');
     Route::get('/export/devices/print', [ExportController::class, 'printDevices'])->name('export.devices.print');
+    Route::get('/export/devices/replacement/print', [ExportController::class, 'printReplacement'])->name('export.devices.replacement.print');
+    Route::get('/export/devices/replacement/pdf', [ExportController::class, 'exportReplacementPdf'])->name('export.devices.replacement.pdf');
+    Route::get('/export/devices/replacement/excel', [ExportController::class, 'exportReplacementExcel'])->name('export.devices.replacement.excel');
     Route::get('/export/maintenance/pdf', [ExportController::class, 'exportMaintenancePdf'])->name('export.maintenance.pdf');
     Route::get('/export/maintenance/excel', [ExportController::class, 'exportMaintenanceExcel'])->name('export.maintenance.excel');
     Route::get('/export/maintenance/print', [ExportController::class, 'printMaintenance'])->name('export.maintenance.print');

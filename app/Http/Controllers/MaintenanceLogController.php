@@ -33,7 +33,13 @@ class MaintenanceLogController extends Controller
 
         $logs = $query->orderBy('tanggal', 'desc')->paginate(15);
 
-        return view('maintenance-logs.index', compact('logs'));
+        // Stats untuk stat cards
+        $totalLogs    = MaintenanceLog::count();
+        $selesai      = MaintenanceLog::where('status', 'Selesai')->count();
+        $pending      = MaintenanceLog::where('status', 'Pending')->count();
+        $dalamProses  = MaintenanceLog::where('status', 'Dalam Proses')->count();
+
+        return view('maintenance-logs.index', compact('logs', 'totalLogs', 'selesai', 'pending', 'dalamProses'));
     }
 
     public function create(Request $request)

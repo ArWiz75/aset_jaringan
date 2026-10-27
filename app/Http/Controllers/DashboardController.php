@@ -13,6 +13,7 @@ class DashboardController extends Controller
     {
         $totalDevices = Device::count();
         $activeDevices = Device::where('status', 'Aktif')->count();
+        $replaceDevices = Device::where('status', 'Perlu Diganti')->count();
         $brokenDevices = Device::where('status', 'Rusak')->count();
         $maintenanceDevices = Device::where('status', 'Maintenance')->count();
         $inactiveDevices = Device::where('status', 'Nonaktif')->count();
@@ -45,6 +46,7 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'totalDevices',
             'activeDevices',
+            'replaceDevices',
             'brokenDevices',
             'maintenanceDevices',
             'inactiveDevices',

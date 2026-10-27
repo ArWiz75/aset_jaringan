@@ -21,6 +21,9 @@ class Device extends Model
         'mikrotik_backup_config',
         'tanggal_install',
         'tanggal_rusak',
+        'alasan_penggantian',
+        'rekomendasi_pengganti',
+        'estimasi_biaya',
         'keterangan',
         'foto_perangkat',
     ];
@@ -28,7 +31,41 @@ class Device extends Model
     protected $casts = [
         'tanggal_install' => 'date',
         'tanggal_rusak' => 'date',
+        'estimasi_biaya' => 'decimal:2',
     ];
+
+    /**
+     * Scope query untuk perangkat yang perlu diganti.
+     */
+    public function scopePerluDiganti($query)
+    {
+        return $query->where('status', 'Perlu Diganti');
+    }
+
+    /**
+     * Hitung umur perangkat dari tanggal install sampai sekarang (atau tanggal rusak jika ada).
+     */
+    public function getUmurPerangkatAttribute(): ?string
+    {
+        if (!$this->tanggal_install) {
+            return null;
+        }
+
+        $endDate = $this->tanggal_rusak ?? now();
+        $diffYears = $this->tanggal_install->diffInYears($endDate);
+        $diffMonths = $this->tanggal_install->diffInMonths($endDate) % 12;
+
+        if ($diffYears > 0 && $diffMonths > 0) {
+            return "{$diffYears} thn {$diffMonths} bln";
+        } elseif ($diffYears > 0) {
+            return "{$diffYears} tahun";
+        } elseif ($diffMonths > 0) {
+            return "{$diffMonths} bulan";
+        } else {
+            $days = $this->tanggal_install->diffInDays($endDate);
+            return "{$days} hari";
+        }
+    }
 
     /**
      * Get the mikrotik config with automatic decryption.
