@@ -230,6 +230,17 @@
             navigator.clipboard.writeText(text);
             this.copiedIp = text;
             setTimeout(() => { this.copiedIp = null; }, 2000);
+        },
+        openDenah() {
+            this.denahModalOpen = true;
+            document.body.style.overflow = 'hidden';
+            this.$nextTick(() => {
+                if (window.initDenahZoom) window.initDenahZoom();
+            });
+        },
+        closeDenah() {
+            this.denahModalOpen = false;
+            document.body.style.overflow = '';
         }
     }">
 
@@ -362,7 +373,7 @@
 
                     @if($isImage)
                         <div class="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 cursor-pointer"
-                             @click="denahModalOpen = true">
+                             @click="openDenah()">
                             <img src="{{ asset('storage/' . $opdLocation->denah_file) }}" 
                                  alt="Denah {{ $opdLocation->nama }}" 
                                  class="w-full h-44 object-cover object-top group-hover:scale-105 transition-transform duration-500">
@@ -376,7 +387,7 @@
                             </div>
                         </div>
                         <div class="flex items-center justify-between mt-2.5 px-1">
-                            <button @click="denahModalOpen = true" class="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold hover:underline flex items-center gap-1">
+                            <button @click="openDenah()" class="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold hover:underline flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 Pratinjau Penuh
                             </button>
@@ -962,54 +973,253 @@
 
         </div>
 
-        {{-- ===== MODAL LIGHTBOX DENAH ===== --}}
+        {{-- ===== MODAL LIGHTBOX DENAH (TELEPORTED TO BODY > OVERLAYS SIDEBAR) ===== --}}
         @if($opdLocation->denah_file && $isImage)
-        <div x-show="denahModalOpen" 
-             x-cloak 
-             class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4"
-             @keydown.escape.window="denahModalOpen = false"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0">
-            
-            <div class="relative max-w-5xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-                 @click.away="denahModalOpen = false"
+        <template x-teleport="body">
+            <div x-show="denahModalOpen" 
+                 x-cloak 
+                 class="fixed inset-0 flex flex-col select-none"
+                 style="z-index: 999999; background: #080c17;"
+                 @keydown.escape.window="closeDenah()"
                  x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="scale-95 opacity-0"
-                 x-transition:enter-end="scale-100 opacity-100">
+                 x-transition:enter-start="opacity-0 scale-98"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-98">
                 
-                {{-- Modal Header --}}
-                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                {{-- ── Modal Header bar ── --}}
+                <div class="flex items-center justify-between px-5 py-3 flex-shrink-0"
+                     style="background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 10;">
+                    <div class="flex items-center gap-3">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Denah Gedung: {{ $opdLocation->nama }}</h3>
-                            <p class="text-[11px] text-slate-500">Klik kanan atau gunakan tombol tab baru untuk mengunduh</p>
+                            <div class="flex items-center gap-2">
+                                <h2 style="font-size: 0.95rem; font-weight: 800; color: #f8fafc; margin: 0; letter-spacing: -0.01em;">
+                                    Denah Jaringan &middot; {{ $opdLocation->nama }}
+                                </h2>
+                                <span style="font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); text-transform: uppercase; letter-spacing: 0.05em;">
+                                    Pratinjau Interaktif
+                                </span>
+                            </div>
+                            <p style="font-size: 0.72rem; color: #94a3b8; margin: 2px 0 0 0;">
+                                Gunakan scroll mouse untuk zoom &middot; Drag mouse untuk menggeser gambar &middot; Tekan ESC untuk menutup
+                            </p>
                         </div>
                     </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <a href="{{ asset('storage/' . $opdLocation->denah_file) }}" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition flex items-center gap-1">
+
+                    <div style="display: flex; align-items: center; gap: 0.65rem;">
+                        {{-- Zoom controls toolbar --}}
+                        <div style="display: flex; align-items: center; gap: 3px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 3px 6px;">
+                            <button onclick="denahZoom(-0.25)" title="Perkecil (Scroll down atau klik)"
+                                    style="width: 30px; height: 30px; border-radius: 7px; background: transparent; border: none; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; transition: all 0.15s;"
+                                    onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.color='#fff';"
+                                    onmouseout="this.style.background='transparent';this.style.color='#cbd5e1';">
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
+                            </button>
+                            
+                            <span id="denah-zoom-label" style="font-size: 0.75rem; font-weight: 800; color: #38bdf8; min-width: 44px; text-align: center; font-family: monospace;">100%</span>
+                            
+                            <button onclick="denahZoom(0.25)" title="Perbesar (Scroll up atau klik)"
+                                    style="width: 30px; height: 30px; border-radius: 7px; background: transparent; border: none; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; transition: all 0.15s;"
+                                    onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.color='#fff';"
+                                    onmouseout="this.style.background='transparent';this.style.color='#cbd5e1';">
+                                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                            
+                            <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.12); margin: 0 3px;"></div>
+                            
+                            <button onclick="denahReset()" title="Reset ke ukuran awal (100% & posisi tengah)"
+                                    style="display: flex; align-items: center; gap: 4px; padding: 0 8px; height: 30px; border-radius: 7px; background: transparent; border: none; color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.15s;"
+                                    onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.color='#fff';"
+                                    onmouseout="this.style.background='transparent';this.style.color='#94a3b8';">
+                                <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+
+                        {{-- Tab baru button --}}
+                        <a href="{{ asset('storage/' . $opdLocation->denah_file) }}" target="_blank"
+                           style="display: inline-flex; align-items: center; gap: 5px; height: 36px; padding: 0 12px; border-radius: 10px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); color: #e2e8f0; font-size: 0.78rem; font-weight: 600; text-decoration: none; transition: all 0.2s;"
+                           onmouseover="this.style.background='rgba(255,255,255,0.14)';this.style.color='#fff';"
+                           onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='#e2e8f0';">
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                             <span>Tab Baru</span>
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                         </a>
-                        <button @click="denahModalOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+
+                        {{-- Close button --}}
+                        <button @click="closeDenah()"
+                                title="Tutup pratinjau (ESC)"
+                                style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                                onmouseover="this.style.background='rgba(239,68,68,0.35)';this.style.color='#fff';"
+                                onmouseout="this.style.background='rgba(239,68,68,0.18)';this.style.color='#fca5a5';">
+                            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <span>Tutup</span>
                         </button>
                     </div>
                 </div>
 
-                {{-- Modal Body: Image --}}
-                <div class="p-4 bg-slate-50 dark:bg-slate-950 flex items-center justify-center max-h-[75vh] overflow-auto">
-                    <img src="{{ asset('storage/' . $opdLocation->denah_file) }}" alt="Denah Penuh {{ $opdLocation->nama }}" class="max-w-full h-auto rounded-lg shadow-sm border border-slate-200 dark:border-slate-800">
+                {{-- ── Image viewport (blueprint background + scroll zoom + drag pan) ── --}}
+                <div id="denah-viewport"
+                     style="flex: 1; overflow: hidden; cursor: grab; position: relative; display: flex; align-items: center; justify-content: center; background-color: #0b1120; background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 24px 24px;">
+                    <div id="denah-transform-wrap" style="transform-origin: center center; will-change: transform; transition: transform 0.05s ease-out;">
+                        <img id="denah-img"
+                             src="{{ asset('storage/' . $opdLocation->denah_file) }}"
+                             alt="Denah Penuh {{ $opdLocation->nama }}"
+                             ondragstart="return false;"
+                             style="max-width: 90vw; max-height: 82vh; display: block; user-select: none; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); background: #ffffff;">
+                    </div>
+
+                    {{-- Floating bottom hint pill --}}
+                    <div style="position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.88); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.12); padding: 7px 18px; border-radius: 999px; font-size: 0.72rem; color: #cbd5e1; display: flex; align-items: center; gap: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); pointer-events: none; z-index: 10;">
+                        <span style="display: inline-flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 0.85rem;">🖱️</span> Scroll untuk Zoom
+                        </span>
+                        <span style="width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.3);"></span>
+                        <span style="display: inline-flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 0.85rem;">✋</span> Klik &amp; Drag untuk Geser
+                        </span>
+                        <span style="width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.3);"></span>
+                        <span style="display: inline-flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 0.85rem;">👆</span> Dobel-klik untuk Zoom In/Out
+                        </span>
+                        <span style="width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.3);"></span>
+                        <span style="display: inline-flex; align-items: center; gap: 5px; color: #94a3b8;">
+                            <kbd style="padding: 1px 5px; border-radius: 4px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-family: monospace; font-size: 0.65rem;">ESC</kbd> Tutup
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
+        @endif
+
+        {{-- ===== DENAH ZOOM/PAN SCRIPT ===== --}}
+        @if($opdLocation->denah_file && $isImage)
+        <script>
+        (function(){
+            let scale = 1, tx = 0, ty = 0;
+            let dragging = false, startX = 0, startY = 0;
+            const MIN = 0.25, MAX = 8;
+
+            function getEls(){
+                return {
+                    vp: document.getElementById('denah-viewport'),
+                    wrap: document.getElementById('denah-transform-wrap'),
+                    label: document.getElementById('denah-zoom-label')
+                };
+            }
+
+            function applyTransform(){
+                const {wrap, label} = getEls();
+                if(!wrap) return;
+                wrap.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+                if(label) label.textContent = Math.round(scale*100)+'%';
+            }
+
+            window.denahZoom = function(delta){
+                scale = Math.min(MAX, Math.max(MIN, Math.round((scale + delta) * 100) / 100));
+                applyTransform();
+            };
+
+            window.denahReset = function(){
+                scale = 1; tx = 0; ty = 0;
+                applyTransform();
+            };
+
+            window.initDenahZoom = function(){
+                const {vp} = getEls();
+                if(!vp || vp._denahInited) return;
+                vp._denahInited = true;
+                scale = 1; tx = 0; ty = 0;
+                applyTransform();
+
+                // Scroll to zoom smoothly
+                vp.addEventListener('wheel', function(e){
+                    e.preventDefault();
+                    const delta = e.deltaY < 0 ? 0.2 : -0.2;
+                    scale = Math.min(MAX, Math.max(MIN, Math.round((scale + delta) * 100) / 100));
+                    applyTransform();
+                }, {passive: false});
+
+                // Double click to toggle zoom (100% <-> 175%)
+                vp.addEventListener('dblclick', function(e){
+                    e.preventDefault();
+                    if(scale > 1.2){
+                        window.denahReset();
+                    } else {
+                        scale = 1.75;
+                        applyTransform();
+                    }
+                });
+
+                // Drag to pan
+                vp.addEventListener('mousedown', function(e){
+                    if(e.button !== 0) return; // Left click only
+                    dragging = true;
+                    startX = e.clientX - tx;
+                    startY = e.clientY - ty;
+                    vp.style.cursor = 'grabbing';
+                });
+                window.addEventListener('mousemove', function(e){
+                    if(!dragging) return;
+                    tx = e.clientX - startX;
+                    ty = e.clientY - startY;
+                    applyTransform();
+                });
+                window.addEventListener('mouseup', function(){
+                    if(dragging){ 
+                        dragging = false; 
+                        const {vp} = getEls(); 
+                        if(vp) vp.style.cursor='grab'; 
+                    }
+                });
+
+                // Touch pinch & pan
+                let lastDist = null, touchStart = null;
+                vp.addEventListener('touchstart', function(e){
+                    if(e.touches.length === 2){
+                        lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                    } else if(e.touches.length === 1){
+                        touchStart = {x: e.touches[0].clientX - tx, y: e.touches[0].clientY - ty};
+                    }
+                }, {passive:true});
+                vp.addEventListener('touchmove', function(e){
+                    e.preventDefault();
+                    if(e.touches.length === 2){
+                        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                        if(lastDist){ 
+                            scale = Math.min(MAX, Math.max(MIN, scale * (dist / lastDist))); 
+                            applyTransform(); 
+                        }
+                        lastDist = dist;
+                    } else if(e.touches.length === 1 && touchStart){
+                        tx = e.touches[0].clientX - touchStart.x;
+                        ty = e.touches[0].clientY - touchStart.y;
+                        applyTransform();
+                    }
+                }, {passive:false});
+                vp.addEventListener('touchend', function(){ lastDist = null; touchStart = null; });
+
+                // Keyboard controls (+ / - / 0)
+                window.addEventListener('keydown', function(e){
+                    const {vp} = getEls();
+                    if(!vp || vp.offsetParent === null) return; // Only when visible
+                    if(e.key === '+' || e.key === '='){
+                        e.preventDefault();
+                        window.denahZoom(0.25);
+                    } else if(e.key === '-' || e.key === '_'){
+                        e.preventDefault();
+                        window.denahZoom(-0.25);
+                    } else if(e.key === '0'){
+                        e.preventDefault();
+                        window.denahReset();
+                    }
+                });
+            };
+        })();
+        </script>
         @endif
 
     </div>

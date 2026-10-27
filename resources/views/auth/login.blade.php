@@ -1,46 +1,68 @@
-<x-guest-layout>
+﻿<x-guest-layout>
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    @if (session('status'))
+        <div class="status-msg">{{ session('status') }}</div>
+    @endif
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <label for="email" class="block text-sm font-medium text-slate-300 mb-1">Email</label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
-                class="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 focus:outline-none"
-                placeholder="email">
-            @error('email') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+        <!-- Email -->
+        <div class="form-group">
+            <label for="email" class="form-label">Alamat Email</label>
+            <input id="email" type="email" name="email"
+                value="{{ old('email') }}"
+                required autofocus autocomplete="username"
+                class="form-input {{ $errors->has('email') ? 'has-error' : '' }}"
+                placeholder="nama@instansi.go.id">
+            @error('email')
+                <p class="error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <label for="password" class="block text-sm font-medium text-slate-300 mb-1">Password</label>
-            <input id="password" type="password" name="password" required autocomplete="current-password"
-                class="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 focus:outline-none"
-                placeholder="password">
-            @error('password') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+        <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-wrap">
+                <input id="password" type="password" name="password"
+                    required autocomplete="current-password"
+                    class="form-input {{ $errors->has('password') ? 'has-error' : '' }}"
+                    placeholder="••••••••"
+                    style="padding-right: 3rem;">
+                <button type="button" class="toggle-pw" onclick="togglePw('password', this)">
+                    <svg class="eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    <svg class="eye-closed" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                    </svg>
+                </button>
+            </div>
+            @error('password')
+                <p class="error-msg">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded bg-slate-800 border-slate-700 text-cyan-500 focus:ring-cyan-500/20" name="remember">
-                <span class="ms-2 text-sm text-slate-400">Ingat saya</span>
+        <!-- Remember + Forgot -->
+        <div class="form-row">
+            <label class="remember" for="remember_me">
+                <input id="remember_me" type="checkbox" name="remember">
+                <span>Ingat saya</span>
             </label>
+            @if (Route::has('password.request'))
+                <a href="{{ route('password.request') }}"
+                    style="font-size:0.78rem; color:#6366f1; text-decoration:none; font-weight:600; transition:color 0.2s;"
+                    onmouseover="this.style.color='#a5b4fc'"
+                    onmouseout="this.style.color='#6366f1'">
+                    Lupa password?
+                </a>
+            @endif
         </div>
 
-        <div class="mt-6">
-            <button type="submit" class="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300">
-                Masuk
-            </button>
-        </div>
-
-        <!-- <div class="mt-4 p-3 rounded-xl bg-slate-800/30 border border-slate-700/30">
-            <p class="text-xs text-slate-500 text-center">Demo Accounts:</p>
-            <p class="text-xs text-slate-400 text-center mt-1">Admin: admin@kominfo.go.id | password</p>
-            <p class="text-xs text-slate-400 text-center">Viewer: staf@kecamatan.go.id | password</p>
-        </div> -->
+        <!-- Submit -->
+        <button type="submit" class="btn-submit">
+            Masuk ke Sistem
+        </button>
     </form>
 </x-guest-layout>

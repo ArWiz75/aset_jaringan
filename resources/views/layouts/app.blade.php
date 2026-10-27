@@ -163,7 +163,7 @@
         .logout-btn svg { width: 18px; height: 18px; }
 
         /* Main content */
-        .app-main { position: relative; z-index: 1; min-height: 100vh; }
+        .app-main { position: relative; min-height: 100vh; }
         @media (min-width: 1024px) { .app-main { margin-left: 250px; } }
 
         /* Mobile header */
