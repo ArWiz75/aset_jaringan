@@ -5,179 +5,418 @@
     <style>
         /* ===== PAGE HEADER ===== */
         .page-header-wrap {
-            background: linear-gradient(135deg, #1e3a5f 0%, #1a56db 60%, #0ea5e9 100%);
+            background: linear-gradient(135deg, #0b1528 0%, #102447 50%, #0d3257 100%);
+            border: 1px solid rgba(56, 189, 248, 0.28);
             border-radius: 18px;
-            padding: 1.75rem 2rem;
-            margin-bottom: 1.5rem;
+            padding: 1.6rem 2rem;
+            margin-bottom: 1.35rem;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 28px rgba(26, 86, 219, 0.28);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 25px rgba(56, 189, 248, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
         }
         .page-header-wrap::before {
             content: "";
             position: absolute;
-            top: -50px; right: -40px;
-            width: 220px; height: 220px;
-            background: rgba(255,255,255,0.07);
+            top: -60px; right: -50px;
+            width: 230px; height: 230px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
         .page-header-wrap::after {
             content: "";
             position: absolute;
-            bottom: -70px; right: 110px;
+            bottom: -70px; right: 120px;
             width: 270px; height: 270px;
-            background: rgba(255,255,255,0.04);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
         .hdr-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700;
-            border-radius: 10px; text-decoration: none;
-            transition: all 0.2s ease; white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.48rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
         .hdr-btn:hover { transform: translateY(-1px); }
         .hdr-btn:active { transform: scale(0.97); }
+
         .hdr-btn-ghost {
-            background: rgba(255,255,255,0.13); color: #fff;
-            border: 1px solid rgba(255,255,255,0.22);
-            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            border: 1px solid rgba(99, 120, 150, 0.3);
+            backdrop-filter: blur(6px);
         }
-        .hdr-btn-ghost:hover { background: rgba(255,255,255,0.22); color: #fff; }
-        .hdr-btn-pdf { background: rgba(239,68,68,0.2); color: #fff; border: 1px solid rgba(252,165,165,0.35); backdrop-filter: blur(4px); }
-        .hdr-btn-pdf:hover { background: rgba(239,68,68,0.3); color: #fff; }
-        .hdr-btn-excel { background: rgba(16,185,129,0.2); color: #fff; border: 1px solid rgba(110,231,183,0.35); backdrop-filter: blur(4px); }
-        .hdr-btn-excel:hover { background: rgba(16,185,129,0.3); color: #fff; }
+        .hdr-btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border-color: rgba(99, 120, 150, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .hdr-btn-pdf {
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            backdrop-filter: blur(6px);
+        }
+        .hdr-btn-pdf:hover {
+            background: rgba(239, 68, 68, 0.22);
+            color: #fff;
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 14px rgba(239, 68, 68, 0.3);
+        }
+
+        .hdr-btn-excel {
+            background: rgba(16, 185, 129, 0.12);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            backdrop-filter: blur(6px);
+        }
+        .hdr-btn-excel:hover {
+            background: rgba(16, 185, 129, 0.22);
+            color: #fff;
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
+        }
+
         .hdr-btn-primary {
-            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-            color: #fff; border: none;
-            box-shadow: 0 4px 14px rgba(245,158,11,0.4);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #0b1120;
+            font-weight: 800;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25), 0 4px 14px rgba(0, 0, 0, 0.35);
         }
-        .hdr-btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,0.5); background: linear-gradient(135deg,#fbbf24,#fb923c); color: #fff; }
+        .hdr-btn-primary:hover {
+            box-shadow: 0 0 26px rgba(245, 158, 11, 0.4), 0 6px 18px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0b1120;
+        }
 
         /* ===== STAT CARDS ===== */
         .stat-cards-row {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 0.85rem; margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.85rem;
+            margin-bottom: 1.35rem;
         }
         @media(max-width: 768px) { .stat-cards-row { grid-template-columns: repeat(2, 1fr); } }
+        @media(max-width: 480px) { .stat-cards-row { grid-template-columns: 1fr; } }
+
         .stat-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
-            padding: 1rem 1.15rem; display: flex; align-items: center; gap: 0.9rem;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.2s ease;
+            border-radius: 14px;
+            padding: 1.05rem 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
             text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
         }
-        .stat-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.09); transform: translateY(-2px); }
-        .stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .stat-card-blue {
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.08), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(56, 189, 248, 0.1);
+            background: linear-gradient(135deg, rgba(14, 22, 36, 0.9) 0%, rgba(7, 35, 55, 0.7) 100%);
+        }
+        .stat-card-blue:hover {
+            box-shadow: 0 0 28px rgba(56, 189, 248, 0.2), 0 6px 20px rgba(0,0,0,0.5);
+            border-color: rgba(56, 189, 248, 0.55);
+        }
+
+        .stat-card-green {
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.08), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(16, 185, 129, 0.1);
+            background: linear-gradient(135deg, rgba(13, 22, 20, 0.9) 0%, rgba(5, 40, 30, 0.7) 100%);
+        }
+        .stat-card-green:hover {
+            box-shadow: 0 0 28px rgba(16, 185, 129, 0.2), 0 6px 20px rgba(0,0,0,0.5);
+            border-color: rgba(16, 185, 129, 0.55);
+        }
+
+        .stat-card-amber {
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.08), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(245, 158, 11, 0.1);
+            background: linear-gradient(135deg, rgba(22, 18, 8, 0.9) 0%, rgba(45, 30, 5, 0.7) 100%);
+        }
+        .stat-card-amber:hover {
+            box-shadow: 0 0 28px rgba(245, 158, 11, 0.2), 0 6px 20px rgba(0,0,0,0.5);
+            border-color: rgba(245, 158, 11, 0.55);
+        }
+
+        .stat-card-purple {
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.08), 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(139, 92, 246, 0.1);
+            background: linear-gradient(135deg, rgba(18, 13, 30, 0.9) 0%, rgba(35, 15, 60, 0.7) 100%);
+        }
+        .stat-card-purple:hover {
+            box-shadow: 0 0 28px rgba(139, 92, 246, 0.2), 0 6px 20px rgba(0,0,0,0.5);
+            border-color: rgba(139, 92, 246, 0.55);
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
         .stat-icon svg { width: 22px; height: 22px; }
-        .stat-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 2px; }
-        .stat-value { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .stat-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #94a3b8;
+            margin-bottom: 3px;
+        }
+        .stat-value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
 
         /* ===== FILTER CARD ===== */
         .filter-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-            padding: 1.1rem 1.35rem; margin-bottom: 1.35rem;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            background: rgba(22, 30, 46, 0.85);
+            border: 1px solid rgba(99, 120, 150, 0.22);
+            border-radius: 14px;
+            padding: 1.15rem 1.35rem;
+            margin-bottom: 1.35rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+        }
+        .filter-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #94a3b8;
+            margin-bottom: 0.35rem;
         }
         .filter-input {
-            width: 100%; background: #f8fafc !important;
-            border: 1.5px solid #e2e8f0 !important; border-radius: 10px !important;
-            padding: 0.55rem 0.95rem !important; font-size: 0.82rem !important;
-            color: #1e293b !important; transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.85) !important;
+            border: 1px solid rgba(99, 120, 150, 0.3) !important;
+            border-radius: 10px !important;
+            padding: 0.55rem 0.95rem !important;
+            font-size: 0.82rem !important;
+            color: #e2e8f0 !important;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .filter-input:focus {
-            border-color: #1a56db !important;
-            box-shadow: 0 0 0 3px rgba(26,86,219,0.1) !important;
-            background: #fff !important; outline: none;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18) !important;
+            background: rgba(15, 23, 42, 0.95) !important;
+            outline: none;
+        }
+        .filter-input option {
+            background: #161b22;
+            color: #e2e8f0;
         }
         .filter-btn-submit {
-            width: 100%; background: linear-gradient(135deg, #1a56db, #0ea5e9);
-            color: #fff; border: none; border-radius: 10px;
-            padding: 0.55rem 1rem; font-size: 0.82rem; font-weight: 700;
-            cursor: pointer; display: inline-flex; align-items: center;
-            justify-content: center; gap: 6px; transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(26,86,219,0.25);
+            width: 100%;
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: #fff;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 10px;
+            padding: 0.55rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 16px rgba(14, 165, 233, 0.3);
+            white-space: nowrap;
         }
-        .filter-btn-submit:hover { background: linear-gradient(135deg, #1e40af, #0284c7); }
+        .filter-btn-submit:hover {
+            background: linear-gradient(135deg, #0369a1, #0284c7);
+            box-shadow: 0 0 22px rgba(14, 165, 233, 0.45);
+            transform: translateY(-1px);
+        }
 
         /* ===== TABLE ===== */
         .maint-table-wrap {
-            background: #fff; border: 1px solid #e2e8f0;
-            border-radius: 16px; overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            background: rgba(22, 30, 46, 0.85);
+            border: 1px solid rgba(99, 120, 150, 0.22);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
         }
-        .maint-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .maint-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
         .maint-table thead tr {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            border-bottom: 2px solid #e2e8f0;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(99, 120, 150, 0.25);
         }
         .maint-table thead th {
-            padding: 0.85rem 1rem; text-align: left;
-            font-size: 0.67rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 0.07em; color: #64748b;
+            padding: 0.9rem 1rem;
+            text-align: left;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8 !important;
         }
         .maint-table thead th:last-child { text-align: center; }
-        .maint-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
-        .maint-table tbody tr:hover { background: #f0f9ff; }
+        .maint-table tbody tr {
+            border-bottom: 1px solid rgba(99, 120, 150, 0.12);
+            transition: background 0.18s ease;
+        }
+        .maint-table tbody tr:hover {
+            background: rgba(56, 189, 248, 0.04);
+        }
         .maint-table tbody tr:last-child { border-bottom: none; }
-        .maint-table td { padding: 0.8rem 1rem; vertical-align: middle; }
+        .maint-table td {
+            padding: 0.85rem 1rem !important;
+            vertical-align: middle;
+        }
 
         /* Jenis Badge */
         .jenis-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            padding: 0.22rem 0.65rem; border-radius: 8px;
-            font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.22rem 0.65rem;
+            border-radius: 8px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .jenis-perbaikan { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-        .jenis-penggantian { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
-        .jenis-konfigurasi { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-        .jenis-preventif { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+        .jenis-perbaikan {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .jenis-penggantian {
+            background: rgba(139, 92, 246, 0.15);
+            color: #c4b5fd;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        .jenis-konfigurasi {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .jenis-preventif {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
 
         /* Status Badge */
         .status-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 0.25rem 0.7rem; border-radius: 20px;
-            font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-        .status-selesai { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-        .status-selesai .status-dot { background: #10b981; box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
-        .status-pending { background: #fffbeb; color: #78350f; border: 1px solid #fde68a; }
-        .status-pending .status-dot { background: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
-        .status-proses { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-        .status-proses .status-dot { background: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+        .status-selesai {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+        .status-selesai .status-dot { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.8); }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+        .status-pending .status-dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.8); }
+
+        .status-proses {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+        .status-proses .status-dot { background: #38bdf8; box-shadow: 0 0 6px rgba(56, 189, 248, 0.8); }
 
         /* Action Buttons */
         .act-btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 30px; height: 30px; border-radius: 8px;
-            border: 1px solid #e2e8f0; cursor: pointer;
-            background: #f8fafc; color: #94a3b8;
-            transition: all 0.15s ease; text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 31px;
+            height: 31px;
+            border-radius: 8px;
+            border: 1px solid rgba(99, 120, 150, 0.25);
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.04);
+            color: #94a3b8;
+            transition: all 0.18s ease;
+            text-decoration: none;
         }
-        .act-btn:hover { transform: scale(1.08); }
-        .act-btn-view:hover { background: #eff6ff; color: #1a56db; border-color: #bfdbfe; }
-        .act-btn-edit:hover { background: #fffbeb; color: #d97706; border-color: #fde68a; }
-        .act-btn-del:hover  { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+        .act-btn:hover { transform: translateY(-1px); }
+        .act-btn-view:hover {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+        .act-btn-edit:hover {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+        }
+        .act-btn-del:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
         .act-btn svg { width: 14px; height: 14px; }
 
         /* Pagination */
         .pagination-wrap {
-            padding: 0.85rem 1.1rem;
-            background: linear-gradient(to right, #f8fafc, #f1f5f9);
-            border-top: 1px solid #e2e8f0;
+            padding: 0.9rem 1.15rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid rgba(99, 120, 150, 0.2);
         }
 
         /* Empty state */
         .empty-state { padding: 4rem 1rem; text-align: center; }
         .empty-icon {
-            width: 64px; height: 64px; border-radius: 18px;
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(99, 120, 150, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
         }
-        .empty-icon svg { width: 32px; height: 32px; color: #94a3b8; }
+        .empty-icon svg { width: 32px; height: 32px; color: #64748b; }
     </style>
     @endpush
 
@@ -186,13 +425,13 @@
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
             <div>
                 <div class="flex items-center gap-2 mb-2">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-semibold border border-white/20 backdrop-blur-sm">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-sm" style="background:rgba(56,189,248,0.15);color:#38bdf8;border-color:rgba(56,189,248,0.3);box-shadow:0 0 12px rgba(56,189,248,0.15);">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Riwayat Perbaikan
                     </span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Log Maintenance</h1>
-                <p class="text-sm text-blue-100 mt-1 font-medium">Riwayat perbaikan dan penggantian perangkat jaringan</p>
+                <p class="text-sm text-slate-300 mt-1 font-medium">Riwayat perbaikan dan penggantian perangkat jaringan</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('export.maintenance.print') }}?{{ http_build_query(request()->query()) }}" target="_blank" class="hdr-btn hdr-btn-ghost">
@@ -209,7 +448,7 @@
                 </a>
                 @if(auth()->user()->isAdmin())
                 <a href="{{ route('maintenance-logs.create') }}" class="hdr-btn hdr-btn-primary">
-                    <span style="width:18px;height:18px;background:rgba(255,255,255,0.25);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span style="width:18px;height:18px;background:rgba(0,0,0,0.15);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
                     </span>
                     Tambah Log
@@ -221,43 +460,43 @@
 
     {{-- ===== STAT CARDS ===== --}}
     <div class="stat-cards-row">
-        <div class="stat-card" style="border-top: 3px solid #1a56db;">
-            <div class="stat-icon" style="background: #eff6ff;">
-                <svg fill="none" stroke="#1a56db" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <div class="stat-card stat-card-blue">
+            <div class="stat-icon" style="background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);">
+                <svg fill="none" stroke="#38bdf8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
             <div>
                 <p class="stat-label">Total Log</p>
-                <p class="stat-value" style="color: #1a56db;">{{ $totalLogs }}</p>
+                <p class="stat-value" style="color: #38bdf8;">{{ $totalLogs }}</p>
             </div>
         </div>
 
-        <div class="stat-card" style="border-top: 3px solid #10b981;">
-            <div class="stat-icon" style="background: #ecfdf5;">
-                <svg fill="none" stroke="#10b981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="stat-card stat-card-green">
+            <div class="stat-icon" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);">
+                <svg fill="none" stroke="#34d399" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <p class="stat-label" style="color: #059669;">Selesai</p>
-                <p class="stat-value" style="color: #059669;">{{ $selesai }}</p>
+                <p class="stat-label">Selesai</p>
+                <p class="stat-value" style="color: #34d399;">{{ $selesai }}</p>
             </div>
         </div>
 
-        <div class="stat-card" style="border-top: 3px solid #f59e0b;">
-            <div class="stat-icon" style="background: #fffbeb;">
-                <svg fill="none" stroke="#f59e0b" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="stat-card stat-card-amber">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);">
+                <svg fill="none" stroke="#fcd34d" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div>
-                <p class="stat-label" style="color: #d97706;">Pending</p>
-                <p class="stat-value" style="color: #d97706;">{{ $pending }}</p>
+                <p class="stat-label">Pending</p>
+                <p class="stat-value" style="color: #fcd34d;">{{ $pending }}</p>
             </div>
         </div>
 
-        <div class="stat-card" style="border-top: 3px solid #3b82f6;">
-            <div class="stat-icon" style="background: #eff6ff;">
-                <svg fill="none" stroke="#3b82f6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <div class="stat-card stat-card-purple">
+            <div class="stat-icon" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);">
+                <svg fill="none" stroke="#c4b5fd" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
             <div>
-                <p class="stat-label" style="color: #2563eb;">Dalam Proses</p>
-                <p class="stat-value" style="color: #2563eb;">{{ $dalamProses }}</p>
+                <p class="stat-label">Dalam Proses</p>
+                <p class="stat-value" style="color: #c4b5fd;">{{ $dalamProses }}</p>
             </div>
         </div>
     </div>
@@ -267,11 +506,11 @@
         <form method="GET">
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Cari Perangkat / Deskripsi</label>
+                    <label class="filter-label">Cari Perangkat / Deskripsi</label>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Ketik untuk mencari..." class="filter-input">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Jenis Maintenance</label>
+                    <label class="filter-label">Jenis Maintenance</label>
                     <select name="jenis" class="filter-input">
                         <option value="">Semua Jenis</option>
                         @foreach(['Perbaikan','Penggantian','Konfigurasi','Preventif'] as $j)
@@ -280,7 +519,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Status</label>
+                    <label class="filter-label">Status</label>
                     <select name="status" class="filter-input">
                         <option value="">Semua Status</option>
                         @foreach(['Selesai','Pending','Dalam Proses'] as $s)
@@ -289,13 +528,13 @@
                     </select>
                 </div>
                 <div class="flex flex-col justify-end gap-2">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 opacity-0">.</label>
+                    <label class="filter-label opacity-0 hidden sm:block">Aksi</label>
                     <button type="submit" class="filter-btn-submit">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         Cari & Filter
                     </button>
                     @if(request()->anyFilled(['search','jenis','status']))
-                    <a href="{{ route('maintenance-logs.index') }}" class="text-center text-xs font-semibold text-slate-500 hover:text-red-500 transition py-1">
+                    <a href="{{ route('maintenance-logs.index') }}" class="text-center text-xs font-semibold text-slate-400 hover:text-red-400 transition py-0.5">
                         ✕ Reset Filter
                     </a>
                     @endif
@@ -324,11 +563,11 @@
                     @forelse($logs as $log)
                     <tr>
                         <td>
-                            <p class="font-extrabold text-slate-800 text-sm leading-tight">{{ $log->device->merk ?? '-' }} {{ $log->device->model ?? '' }}</p>
+                            <p class="font-extrabold text-slate-100 text-sm leading-tight">{{ $log->device->merk ?? '-' }} {{ $log->device->model ?? '' }}</p>
                             <p class="text-[10px] font-medium text-slate-400 font-mono mt-0.5">SN: {{ $log->device->nomor_seri ?? '-' }}</p>
                         </td>
                         <td>
-                            <p class="text-xs font-semibold text-slate-600 leading-tight">{{ $log->device->opdLocation->nama ?? '-' }}</p>
+                            <p class="text-xs font-semibold text-slate-300 leading-tight">{{ $log->device->opdLocation->nama ?? '-' }}</p>
                         </td>
                         <td>
                             @php
@@ -343,16 +582,16 @@
                             <span class="jenis-badge {{ $jenisClass }}">{{ $log->jenis }}</span>
                         </td>
                         <td class="max-w-xs">
-                            <p class="text-xs text-slate-600 leading-relaxed truncate" title="{{ $log->deskripsi }}">{{ Str::limit($log->deskripsi, 55) }}</p>
+                            <p class="text-xs text-slate-300 leading-relaxed truncate" title="{{ $log->deskripsi }}">{{ Str::limit($log->deskripsi, 55) }}</p>
                         </td>
                         <td>
                             <div class="flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                <span class="text-[11px] font-bold text-slate-600">{{ $log->tanggal->format('d M Y') }}</span>
+                                <span class="text-[11px] font-bold text-slate-300">{{ $log->tanggal->format('d M Y') }}</span>
                             </div>
                         </td>
                         <td>
-                            <span class="text-xs font-black text-amber-600">
+                            <span class="text-xs font-extrabold text-amber-400 font-mono">
                                 {{ $log->biaya ? 'Rp '.number_format($log->biaya, 0, ',', '.') : '-' }}
                             </span>
                         </td>
@@ -371,7 +610,7 @@
                             </span>
                         </td>
                         <td style="text-align:center;">
-                            <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <div style="display:flex;align-items:center;justify-content:center;gap:5px;">
                                 <a href="{{ route('maintenance-logs.show', $log) }}" class="act-btn act-btn-view" title="Lihat Detail">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 </a>
@@ -396,7 +635,7 @@
                                 <div class="empty-icon">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                                 </div>
-                                <p class="font-bold text-slate-600 text-sm">Belum ada log maintenance</p>
+                                <p class="font-bold text-slate-200 text-sm">Belum ada log maintenance</p>
                                 <p class="text-xs text-slate-400 mt-1">
                                     @if(request()->anyFilled(['search','jenis','status']))
                                         Tidak ditemukan hasil untuk filter yang dipilih.
@@ -405,7 +644,7 @@
                                     @endif
                                 </p>
                                 @if(auth()->user()->isAdmin() && !request()->anyFilled(['search','jenis','status']))
-                                <a href="{{ route('maintenance-logs.create') }}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold transition hover:shadow-lg">
+                                <a href="{{ route('maintenance-logs.create') }}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl text-white text-xs font-bold transition hover:shadow-lg" style="background:linear-gradient(135deg, #0284c7, #0ea5e9);border:1px solid rgba(56,189,248,0.4);box-shadow:0 0 16px rgba(14,165,233,0.35);">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                                     Tambah Log Pertama
                                 </a>
