@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\DeviceProposal;
 use App\Models\OpdLocation;
 use App\Models\MaintenanceLog;
 use Illuminate\Http\Request;
@@ -20,6 +21,11 @@ class DashboardController extends Controller
         $totalLocations = OpdLocation::count();
         $totalMaintenance = MaintenanceLog::count();
         $pendingMaintenance = MaintenanceLog::where('status', 'Pending')->count();
+
+        // Usulan & OPD Belum Terpasang Perangkat
+        $totalProposals = DeviceProposal::count();
+        $pendingProposals = DeviceProposal::whereIn('status', ['Diusulkan', 'Dalam Pengadaan'])->count();
+        $emptyLocations = OpdLocation::withCount('devices')->having('devices_count', 0)->count();
 
         // Device count by type for chart
         $devicesByType = Device::selectRaw('tipe, COUNT(*) as total')
@@ -53,6 +59,9 @@ class DashboardController extends Controller
             'totalLocations',
             'totalMaintenance',
             'pendingMaintenance',
+            'totalProposals',
+            'pendingProposals',
+            'emptyLocations',
             'devicesByType',
             'devicesByStatus',
             'recentMaintenance',

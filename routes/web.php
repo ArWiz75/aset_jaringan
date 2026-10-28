@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\DeviceProposalController;
 use App\Http\Controllers\OpdLocationController;
 use App\Http\Controllers\MaintenanceLogController;
 use App\Http\Controllers\ExportController;
@@ -41,6 +42,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/maintenance-logs/{maintenance_log}/edit', [MaintenanceLogController::class, 'edit'])->name('maintenance-logs.edit');
         Route::put('/maintenance-logs/{maintenance_log}', [MaintenanceLogController::class, 'update'])->name('maintenance-logs.update');
         Route::delete('/maintenance-logs/{maintenance_log}', [MaintenanceLogController::class, 'destroy'])->name('maintenance-logs.destroy');
+
+        // Device Proposals (Admin action)
+        Route::post('/device-proposals', [DeviceProposalController::class, 'store'])->name('device-proposals.store');
+        Route::put('/device-proposals/{device_proposal}', [DeviceProposalController::class, 'update'])->name('device-proposals.update');
+        Route::patch('/device-proposals/{device_proposal}/status', [DeviceProposalController::class, 'updateStatus'])->name('device-proposals.update-status');
+        Route::delete('/device-proposals/{device_proposal}', [DeviceProposalController::class, 'destroy'])->name('device-proposals.destroy');
+        Route::post('/opd-locations/{opd_location}/quick-propose', [DeviceProposalController::class, 'quickProposeEmptyOpd'])->name('device-proposals.quick-empty');
     });
 
     // View-only routes (accessible by both admin and viewer)
@@ -50,6 +58,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/opd-locations/{opd_location}', [OpdLocationController::class, 'show'])->name('opd-locations.show');
     Route::get('/maintenance-logs', [MaintenanceLogController::class, 'index'])->name('maintenance-logs.index');
     Route::get('/maintenance-logs/{maintenance_log}', [MaintenanceLogController::class, 'show'])->name('maintenance-logs.show');
+
+    // Usulan Penambahan Perangkat (Index)
+    Route::get('/device-proposals', [DeviceProposalController::class, 'index'])->name('device-proposals.index');
 
     // Export routes (accessible by both admin and viewer)
     Route::get('/export/devices/pdf', [ExportController::class, 'exportDevicesPdf'])->name('export.devices.pdf');
@@ -61,6 +72,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/export/maintenance/pdf', [ExportController::class, 'exportMaintenancePdf'])->name('export.maintenance.pdf');
     Route::get('/export/maintenance/excel', [ExportController::class, 'exportMaintenanceExcel'])->name('export.maintenance.excel');
     Route::get('/export/maintenance/print', [ExportController::class, 'printMaintenance'])->name('export.maintenance.print');
+
+    // Proposal Export routes
+    Route::get('/export/proposals/print', [ExportController::class, 'printProposal'])->name('export.proposals.print');
+    Route::get('/export/proposals/pdf', [ExportController::class, 'exportProposalPdf'])->name('export.proposals.pdf');
+    Route::get('/export/proposals/excel', [ExportController::class, 'exportProposalExcel'])->name('export.proposals.excel');
 });
 
 require __DIR__.'/auth.php';

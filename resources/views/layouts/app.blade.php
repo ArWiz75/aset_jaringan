@@ -347,6 +347,18 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 Perlu Diganti
             </a>
+            <a href="{{ route('device-proposals.index') }}" class="nav-item {{ request()->routeIs('device-proposals.*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Usulan Perangkat</span>
+                @php
+                    $pendingPropCount = \App\Models\DeviceProposal::whereIn('status', ['Diusulkan', 'Dalam Pengadaan'])->count();
+                @endphp
+                @if($pendingPropCount > 0)
+                <span style="margin-left: auto; font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">
+                    {{ $pendingPropCount }}
+                </span>
+                @endif
+            </a>
         </nav>
         <div class="sidebar-account">
             <div class="account-label">Akun</div>

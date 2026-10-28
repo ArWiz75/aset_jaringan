@@ -153,6 +153,61 @@
     </div>
     @endif
 
+    {{-- Alert Banner: OPD Belum Terpasang Perangkat Internet --}}
+    @if(isset($emptyLocations) && $emptyLocations > 0)
+    <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 38px; height: 38px; border-radius: 8px; background-color: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                ⚠️
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: #92400e;">
+                    Terdapat {{ $emptyLocations }} Lokasi OPD Belum Terpasang Perangkat Internet
+                </div>
+                <div style="font-size: 0.8rem; color: #b45309;">
+                    Lokasi OPD belum memiliki Router, Switch, atau Access Point. Segera ajukan rekomendasi pengadaan untuk dilaporkan ke pimpinan.
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ route('device-proposals.index') }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 0.9rem; background-color: #d97706; color: white; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Ajukan Usulan
+            </a>
+            <a href="{{ route('export.proposals.print') }}" target="_blank" style="display: inline-flex; align-items: center; padding: 0.45rem 0.9rem; background-color: #ffffff; color: #d97706; border: 1px solid #fde68a; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+                Cetak Usulan
+            </a>
+        </div>
+    </div>
+    @endif
+
+    {{-- Alert Banner: Usulan Penambahan Perangkat Baru --}}
+    @if(isset($pendingProposals) && $pendingProposals > 0 && (!isset($emptyLocations) || $emptyLocations == 0))
+    <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-left: 4px solid #10b981; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 38px; height: 38px; border-radius: 8px; background-color: #d1fae5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                📋
+            </div>
+            <div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: #065f46;">
+                    Terdapat {{ $pendingProposals }} Usulan Penambahan Perangkat Baru
+                </div>
+                <div style="font-size: 0.8rem; color: #047857;">
+                    Daftar rekomendasi pengadaan perangkat jaringan sedang dalam proses peninjauan untuk dilaporkan ke pimpinan.
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ route('device-proposals.index') }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.45rem 0.9rem; background-color: #059669; color: white; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                Kelola Usulan
+            </a>
+            <a href="{{ route('export.proposals.print') }}" target="_blank" style="display: inline-flex; align-items: center; padding: 0.45rem 0.9rem; background-color: #ffffff; color: #059669; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+                Cetak Laporan
+            </a>
+        </div>
+    </div>
+    @endif
+
     {{-- Stats Grid --}}
     <div class="stat-grid">
         <div class="dash-card">

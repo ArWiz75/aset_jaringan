@@ -300,6 +300,14 @@
                         <span>Usulan Ganti</span>
                     </a>
 
+                    {{-- Usulan Penambahan Perangkat Baru --}}
+                    <a href="{{ route('device-proposals.index', ['opd_location_id' => $opdLocation->id]) }}" 
+                       class="show-btn bg-emerald-500/20 hover:bg-emerald-500/30 text-white border border-emerald-400/40 backdrop-blur-sm shadow-sm" 
+                       title="Daftar & Pengajuan Usulan Penambahan Perangkat OPD Ini">
+                        <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Usulan Baru</span>
+                    </a>
+
                     {{-- Cetak Button --}}
                     <a href="{{ route('export.devices.print', ['opd_location_id' => $opdLocation->id, 'lokasi' => request('lokasi')]) }}" 
                        target="_blank" 
@@ -956,11 +964,18 @@
                                     Belum ada perangkat terdaftar di OPD ini{{ request('lokasi') ? ' pada ruangan terpilih.' : '.' }}
                                 </p>
                                 @if(auth()->check() && auth()->user()->isAdmin())
-                                <div class="mt-4">
+                                <div class="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+                                    <form method="POST" action="{{ route('device-proposals.quick-empty', $opdLocation) }}" class="m-0" onsubmit="return confirm('Buat paket usulan starter internet (1 Router, 1 Switch, 2 AP) untuk {{ $opdLocation->nama }}?')">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-sm">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                            Buat Usulan Paket Starter Internet
+                                        </button>
+                                    </form>
                                     <a href="{{ route('devices.create', ['opd_location_id' => $opdLocation->id]) }}" 
                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                                        Tambah Perangkat Pertama
+                                        Tambah Perangkat Manual
                                     </a>
                                 </div>
                                 @endif

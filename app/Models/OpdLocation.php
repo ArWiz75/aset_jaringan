@@ -31,6 +31,11 @@ class OpdLocation extends Model
         return $this->hasMany(Device::class);
     }
 
+    public function deviceProposals()
+    {
+        return $this->hasMany(DeviceProposal::class);
+    }
+
     public function activeDevicesCount()
     {
         return $this->devices()->where('status', 'Aktif')->count();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\DeviceProposal;
 use App\Models\MaintenanceLog;
 use App\Models\OpdLocation;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -432,6 +433,187 @@ class ExportController extends Controller
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'laporan-pengadaan-penggantian-' . date('Y-m-d') . '.xlsx';
+        $tempFile = storage_path('app/' . $filename);
+        $writer->save($tempFile);
+
+        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Laporan Cetak Resmi Rekomendasi / Usulan Penambahan Perangkat Baru
+     */
+    public function printProposal(Request $request)
+    {
+        $query = DeviceProposal::with('opdLocation');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('urgensi')) {
+            $query->where('urgensi', $request->urgensi);
+        }
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe_perangkat')) {
+            $query->where('tipe_perangkat', $request->tipe_perangkat);
+        }
+
+        $proposals = $query->orderBy('opd_location_id')->orderBy('urgensi', 'asc')->get();
+        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $totalBiaya = $proposals->sum('estimasi_biaya');
+        $totalUnit = $proposals->sum('jumlah');
+        $totalOpd = $proposals->pluck('opd_location_id')->unique()->count();
+
+        // OPD tanpa perangkat
+        $emptyOpds = OpdLocation::withCount('devices')->having('devices_count', 0)->get();
+
+        return view('exports.device-proposal-print', compact('proposals', 'location', 'totalBiaya', 'totalUnit', 'totalOpd', 'emptyOpds'));
+    }
+
+    /**
+     * Export PDF Rekomendasi / Usulan Penambahan Perangkat Baru
+     */
+    public function exportProposalPdf(Request $request)
+    {
+        $query = DeviceProposal::with('opdLocation');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('urgensi')) {
+            $query->where('urgensi', $request->urgensi);
+        }
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe_perangkat')) {
+            $query->where('tipe_perangkat', $request->tipe_perangkat);
+        }
+
+        $proposals = $query->orderBy('opd_location_id')->orderBy('urgensi', 'asc')->get();
+        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $totalBiaya = $proposals->sum('estimasi_biaya');
+        $totalUnit = $proposals->sum('jumlah');
+        $totalOpd = $proposals->pluck('opd_location_id')->unique()->count();
+        $emptyOpds = OpdLocation::withCount('devices')->having('devices_count', 0)->get();
+
+        $pdf = Pdf::loadView('exports.device-proposal-pdf', compact('proposals', 'location', 'totalBiaya', 'totalUnit', 'totalOpd', 'emptyOpds'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('laporan-usulan-penambahan-perangkat-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Export Excel Rekomendasi / Usulan Penambahan Perangkat Baru
+     */
+    public function exportProposalExcel(Request $request)
+    {
+        $query = DeviceProposal::with('opdLocation');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('urgensi')) {
+            $query->where('urgensi', $request->urgensi);
+        }
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe_perangkat')) {
+            $query->where('tipe_perangkat', $request->tipe_perangkat);
+        }
+
+        $proposals = $query->orderBy('opd_location_id')->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Usulan Penambahan Perangkat');
+
+        // Header Title
+        $sheet->setCellValue('A1', 'DAFTAR REKOMENDASI DAN USULAN PENAMBAHAN PERANGKAT JARINGAN');
+        $sheet->setCellValue('A2', 'DINAS KOMUNIKASI DAN INFORMATIKA - Tanggal: ' . date('d F Y'));
+        $sheet->mergeCells('A1:K1');
+        $sheet->mergeCells('A2:K2');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getFont()->setSize(10)->getColor()->setRGB('64748B');
+
+        // Table Header
+        $headers = [
+            'No',
+            'Lokasi OPD',
+            'Ruang / Titik Pasang',
+            'Tipe Perangkat',
+            'Jumlah (Unit)',
+            'Urgensi',
+            'Alasan Kebutuhan / Justifikasi Teknis',
+            'Rekomendasi Spesifikasi / Merk & Model',
+            'Estimasi Biaya (Rp)',
+            'Status Usulan',
+            'Pengusul & Catatan'
+        ];
+
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '4', $header);
+            $sheet->getStyle($col . '4')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+            $sheet->getStyle($col . '4')->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('059669'); // Emerald / Green theme
+            $sheet->getStyle($col . '4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $col++;
+        }
+
+        // Data Rows
+        $row = 5;
+        $totalBiaya = 0;
+        $totalUnit = 0;
+
+        foreach ($proposals as $idx => $p) {
+            $sheet->setCellValue('A' . $row, $idx + 1);
+            $sheet->setCellValue('B' . $row, $p->opdLocation->nama ?? '-');
+            $sheet->setCellValue('C' . $row, $p->lokasi_ruang ?? '-');
+            $sheet->setCellValue('D' . $row, $p->tipe_perangkat);
+            $sheet->setCellValue('E' . $row, (int)$p->jumlah);
+            $sheet->setCellValue('F' . $row, $p->urgensi);
+            $sheet->setCellValue('G' . $row, $p->alasan_kebutuhan);
+            $sheet->setCellValue('H' . $row, $p->rekomendasi_spesifikasi ?? '-');
+            $sheet->setCellValue('I' . $row, (float)($p->estimasi_biaya ?? 0));
+            $sheet->setCellValue('J' . $row, $p->status);
+            $sheet->setCellValue('K' . $row, ($p->nama_pengusul ?? '-') . ($p->catatan ? ' (' . $p->catatan . ')' : ''));
+
+            $totalUnit += (int)$p->jumlah;
+            $totalBiaya += (float)($p->estimasi_biaya ?? 0);
+            $row++;
+        }
+
+        // Summary Row
+        $sheet->setCellValue('A' . $row, 'TOTAL UNIT & ANGGARAN');
+        $sheet->mergeCells('A' . $row . ':D' . $row);
+        $sheet->setCellValue('E' . $row, $totalUnit);
+        $sheet->setCellValue('I' . $row, $totalBiaya);
+        $sheet->getStyle('A' . $row . ':K' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A' . $row . ':K' . $row)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('ECFDF5');
+
+        // Format Currency Column I
+        $sheet->getStyle('I5:I' . $row)->getNumberFormat()
+            ->setFormatCode('"Rp "#,##0');
+
+        // Auto-size columns
+        foreach (range('A', 'K') as $c) {
+            $sheet->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        // Border
+        $dataRange = 'A4:K' . $row;
+        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'laporan-usulan-penambahan-perangkat-' . date('Y-m-d') . '.xlsx';
         $tempFile = storage_path('app/' . $filename);
         $writer->save($tempFile);
 
