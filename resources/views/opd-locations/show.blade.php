@@ -225,6 +225,21 @@
 
     <div x-data="{ 
         denahModalOpen: false, 
+        proposalModalOpen: false,
+        proposalEditModalOpen: false,
+        editProposalData: {
+            id: null,
+            tipe_perangkat: 'Router',
+            jumlah: 1,
+            lokasi_ruang: '',
+            urgensi: 'Tinggi',
+            alasan_kebutuhan: '',
+            rekomendasi_spesifikasi: '',
+            estimasi_biaya: '',
+            status: 'Diusulkan',
+            catatan: '',
+            actionUrl: ''
+        },
         copiedIp: null,
         copyToClipboard(text) {
             navigator.clipboard.writeText(text);
@@ -240,6 +255,23 @@
         },
         closeDenah() {
             this.denahModalOpen = false;
+            document.body.style.overflow = '';
+        },
+        openProposalModal() {
+            this.proposalModalOpen = true;
+            document.body.style.overflow = 'hidden';
+        },
+        closeProposalModal() {
+            this.proposalModalOpen = false;
+            document.body.style.overflow = '';
+        },
+        openEditProposalModal(item) {
+            this.editProposalData = { ...item };
+            this.proposalEditModalOpen = true;
+            document.body.style.overflow = 'hidden';
+        },
+        closeEditProposalModal() {
+            this.proposalEditModalOpen = false;
             document.body.style.overflow = '';
         }
     }">
@@ -301,12 +333,16 @@
                     </a>
 
                     {{-- Usulan Penambahan Perangkat Baru --}}
-                    <a href="{{ route('device-proposals.index', ['opd_location_id' => $opdLocation->id]) }}" 
-                       class="show-btn bg-emerald-500/20 hover:bg-emerald-500/30 text-white border border-emerald-400/40 backdrop-blur-sm shadow-sm" 
-                       title="Daftar & Pengajuan Usulan Penambahan Perangkat OPD Ini">
+                    <button type="button" 
+                       @click="openProposalModal()" 
+                       class="show-btn bg-emerald-500/20 hover:bg-emerald-500/30 text-white border border-emerald-400/40 backdrop-blur-sm shadow-sm cursor-pointer" 
+                       title="Ajukan & Kelola Usulan Penambahan Perangkat Khusus OPD Ini">
                         <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <span>Usulan Baru</span>
-                    </a>
+                        @if(isset($proposals) && $proposals->count() > 0)
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-400 text-emerald-950">{{ $proposals->count() }}</span>
+                        @endif
+                    </button>
 
                     {{-- Cetak Button --}}
                     <a href="{{ route('export.devices.print', ['opd_location_id' => $opdLocation->id, 'lokasi' => request('lokasi')]) }}" 
@@ -967,6 +1003,7 @@
                                 <div class="mt-4 flex flex-wrap items-center justify-center gap-2.5">
                                     <form method="POST" action="{{ route('device-proposals.quick-empty', $opdLocation) }}" class="m-0" onsubmit="return confirm('Buat paket usulan starter internet (1 Router, 1 Switch, 2 AP) untuk {{ $opdLocation->nama }}?')">
                                         @csrf
+                                        <input type="hidden" name="redirect_to_opd" value="1">
                                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-sm">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                                             Buat Usulan Paket Starter Internet
@@ -977,6 +1014,212 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                                         Tambah Perangkat Manual
                                     </a>
+                                </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- CARD: Daftar Usulan Perangkat Baru OPD Ini --}}
+                <div id="section-usulan-opd" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                    {{-- Card Header --}}
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                                    Usulan Penambahan
+                                </span>
+                                @if(isset($proposals) && $proposals->count() > 0)
+                                <span class="text-xs font-bold text-slate-400">
+                                    {{ $proposals->count() }} Usulan Terdaftar
+                                </span>
+                                @endif
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                                <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm flex-shrink-0 text-white">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </span>
+                                <span>Usulan Perangkat Baru &mdash; {{ $opdLocation->nama }}</span>
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                Daftar usulan penambahan perangkat jaringan khusus untuk kebutuhan gedung / ruangan di OPD ini.
+                            </p>
+                        </div>
+
+                        {{-- Action Buttons --}}
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            @if(isset($proposals) && $proposals->count() > 0)
+                            <a href="{{ route('export.proposals.pdf', ['opd_location_id' => $opdLocation->id]) }}" 
+                               target="_blank" 
+                               class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25 hover:bg-rose-500/20 transition">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                                <span>Cetak PDF</span>
+                            </a>
+                            @endif
+
+                            @if(auth()->check() && auth()->user()->isAdmin())
+                            <button type="button" 
+                                    @click="openProposalModal()" 
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 hover:from-emerald-700 hover:to-teal-700 transition cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                <span>+ Ajukan Usulan Baru</span>
+                            </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Proposal List Content --}}
+                    <div class="mt-5">
+                        @if(isset($proposals) && $proposals->count() > 0)
+                            <div class="space-y-3.5">
+                                @foreach($proposals as $prop)
+                                @php
+                                    $urgClass = match($prop->urgensi) {
+                                        'Tinggi' => 'bg-rose-500/15 text-rose-500 dark:text-rose-400 border-rose-500/30',
+                                        'Sedang' => 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30',
+                                        default  => 'bg-blue-500/15 text-blue-500 dark:text-blue-400 border-blue-500/30',
+                                    };
+                                    $propStClass = match($prop->status) {
+                                        'Disetujui'       => 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+                                        'Dalam Pengadaan' => 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+                                        'Terealisasi'     => 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
+                                        'Ditolak'         => 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
+                                        default           => 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+                                    };
+                                    $propDot = match($prop->status) {
+                                        'Disetujui'       => 'bg-emerald-500',
+                                        'Dalam Pengadaan' => 'bg-cyan-500',
+                                        'Terealisasi'     => 'bg-teal-500',
+                                        'Ditolak'         => 'bg-rose-500',
+                                        default           => 'bg-amber-500',
+                                    };
+                                @endphp
+                                <div class="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition">
+                                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                                        {{-- Device Info & Details --}}
+                                        <div class="space-y-1.5 flex-1">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-500/25">
+                                                    <x-device-icon :type="$prop->tipe_perangkat" class="w-3.5 h-3.5" />
+                                                    <span>{{ $prop->tipe_perangkat }}</span>
+                                                </span>
+                                                <span class="px-2 py-0.5 rounded-md text-xs font-black bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100">
+                                                    {{ $prop->jumlah }} Unit
+                                                </span>
+                                                @if($prop->lokasi_ruang)
+                                                <span class="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
+                                                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                                    {{ $prop->lokasi_ruang }}
+                                                </span>
+                                                @endif
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border {{ $urgClass }}">
+                                                    Urgensi: {{ $prop->urgensi }}
+                                                </span>
+                                            </div>
+
+                                            {{-- Alasan Kebutuhan --}}
+                                            <p class="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed pt-1">
+                                                {{ $prop->alasan_kebutuhan }}
+                                            </p>
+
+                                            {{-- Rekomendasi Spesifikasi --}}
+                                            @if($prop->rekomendasi_spesifikasi)
+                                            <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-1">
+                                                <span class="font-bold text-slate-600 dark:text-slate-300">Rekomendasi Spek:</span>
+                                                <span>{{ $prop->rekomendasi_spesifikasi }}</span>
+                                            </div>
+                                            @endif
+
+                                            {{-- Meta: Pengusul & Tanggal --}}
+                                            <div class="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-slate-400">
+                                                <span>Diusulkan oleh: <strong class="text-slate-600 dark:text-slate-300">{{ $prop->nama_pengusul ?: 'Staf / Admin' }}</strong></span>
+                                                <span>&bull;</span>
+                                                <span>{{ $prop->created_at ? $prop->created_at->format('d M Y, H:i') : '-' }}</span>
+                                                @if($prop->estimasi_biaya)
+                                                <span>&bull;</span>
+                                                <span class="font-mono font-bold text-amber-600 dark:text-amber-400">
+                                                    Estimasi: Rp {{ number_format($prop->estimasi_biaya, 0, ',', '.') }}
+                                                </span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- Status Badge & Action Controls --}}
+                                        <div class="flex items-center md:flex-col md:items-end justify-between gap-2.5 flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold border uppercase tracking-wider {{ $propStClass }}">
+                                                <span class="w-2 h-2 rounded-full {{ $propDot }}"></span>
+                                                {{ $prop->status }}
+                                            </span>
+
+                                            @if(auth()->check() && auth()->user()->isAdmin())
+                                            <div class="flex items-center gap-1.5">
+                                                {{-- Quick Status Change Form --}}
+                                                <form method="POST" action="{{ route('device-proposals.update-status', $prop) }}" class="m-0">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <select name="status" onchange="this.form.submit()" class="text-[11px] py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer" title="Ubah Status Usulan">
+                                                        <option value="Diusulkan" {{ $prop->status == 'Diusulkan' ? 'selected' : '' }}>Diusulkan</option>
+                                                        <option value="Disetujui" {{ $prop->status == 'Disetujui' ? 'selected' : '' }}>Disetujui</option>
+                                                        <option value="Dalam Pengadaan" {{ $prop->status == 'Dalam Pengadaan' ? 'selected' : '' }}>Dalam Pengadaan</option>
+                                                        <option value="Terealisasi" {{ $prop->status == 'Terealisasi' ? 'selected' : '' }}>Terealisasi</option>
+                                                        <option value="Ditolak" {{ $prop->status == 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
+                                                    </select>
+                                                </form>
+
+                                                {{-- Edit Button --}}
+                                                <button type="button" 
+                                                        @click="openEditProposalModal({
+                                                            id: {{ $prop->id }},
+                                                            tipe_perangkat: '{{ addslashes($prop->tipe_perangkat) }}',
+                                                            jumlah: {{ $prop->jumlah }},
+                                                            lokasi_ruang: '{{ addslashes($prop->lokasi_ruang ?? '') }}',
+                                                            urgensi: '{{ $prop->urgensi }}',
+                                                            alasan_kebutuhan: '{{ addslashes($prop->alasan_kebutuhan) }}',
+                                                            rekomendasi_spesifikasi: '{{ addslashes($prop->rekomendasi_spesifikasi ?? '') }}',
+                                                            estimasi_biaya: '{{ $prop->estimasi_biaya ?? '' }}',
+                                                            status: '{{ $prop->status }}',
+                                                            catatan: '{{ addslashes($prop->catatan ?? '') }}',
+                                                            actionUrl: '{{ route('device-proposals.update', $prop) }}'
+                                                        })" 
+                                                        title="Edit Usulan" 
+                                                        class="action-icon-btn bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+
+                                                {{-- Hapus Usulan --}}
+                                                <form action="{{ route('device-proposals.destroy', $prop) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus usulan ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" title="Hapus Usulan" class="action-icon-btn bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            {{-- Empty State Usulan OPD --}}
+                            <div class="py-12 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20">
+                                <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Belum Ada Usulan Perangkat Baru untuk OPD Ini</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+                                    Jika terdapat ruangan kerja atau area pelayanan di <strong>{{ $opdLocation->nama }}</strong> yang membutuhkan penambahan router, switch, access point, atau perangkat lainnya, ajukan usulan di sini.
+                                </p>
+                                @if(auth()->check() && auth()->user()->isAdmin())
+                                <div class="mt-4 flex items-center justify-center">
+                                    <button type="button" 
+                                            @click="openProposalModal()" 
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold shadow-md hover:shadow-lg transition cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                        + Ajukan Usulan Baru untuk OPD Ini
+                                    </button>
                                 </div>
                                 @endif
                             </div>
@@ -1235,6 +1478,326 @@
             };
         })();
         </script>
+        @endif
+
+        {{-- ===== MODAL CREATE USULAN BARU OPD INI ===== --}}
+        @if(auth()->check() && auth()->user()->isAdmin())
+        <template x-teleport="body">
+            <div x-show="proposalModalOpen" 
+                 x-cloak 
+                 class="fixed inset-0 flex items-center justify-center p-4 select-none"
+                 style="z-index: 999999; background: rgba(5, 8, 15, 0.78); backdrop-filter: blur(8px);"
+                 @keydown.escape.window="closeProposalModal()"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+                
+                <div @click.away="closeProposalModal()" 
+                     class="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border"
+                     style="background: #161b22; border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 35px rgba(16, 185, 129, 0.15);">
+                    
+                    {{-- Modal Header --}}
+                    <div class="flex items-center justify-between px-6 py-4"
+                         style="background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                        <div class="flex items-center gap-3">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-white">Ajukan Usulan Perangkat Baru</h3>
+                                <p class="text-xs text-emerald-400 font-semibold mt-0.5 flex items-center gap-1">
+                                    <span>📍</span>
+                                    <span>{{ $opdLocation->nama }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" @click="closeProposalModal()" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    {{-- Form --}}
+                    <form method="POST" action="{{ route('device-proposals.store') }}" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                        @csrf
+                        <input type="hidden" name="opd_location_id" value="{{ $opdLocation->id }}">
+                        <input type="hidden" name="redirect_to_opd" value="1">
+                        <input type="hidden" name="opd_name" value="{{ $opdLocation->nama }}">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {{-- Tipe Perangkat --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Tipe Perangkat <span class="text-rose-500">*</span>
+                                </label>
+                                <select name="tipe_perangkat" required 
+                                        class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                                    @foreach(['Router','Switch','Access Point','Modem','Firewall','Server','Converter FO','Kabel & Aksesoris','Lainnya'] as $t)
+                                        <option value="{{ $t }}">{{ $t }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Jumlah Unit --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Jumlah Kebutuhan (Unit) <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="number" name="jumlah" value="1" min="1" required 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {{-- Lokasi Ruang --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Ruangan / Lokasi Penempatan
+                                </label>
+                                <input type="text" name="lokasi_ruang" list="opd-rooms-datalist" placeholder="Cth: Ruang Server, Ruang Rapat Lt. 2" 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                                <datalist id="opd-rooms-datalist">
+                                    @foreach($pemasanganList as $room)
+                                        <option value="{{ $room }}"></option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+
+                            {{-- Tingkat Urgensi --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Tingkat Urgensi <span class="text-rose-500">*</span>
+                                </label>
+                                <select name="urgensi" required 
+                                        class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                                    <option value="Tinggi">Tinggi &mdash; Mendesak / Kritis</option>
+                                    <option value="Sedang" selected>Sedang &mdash; Kebutuhan Standar</option>
+                                    <option value="Rendah">Rendah &mdash; Rencana Cadangan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Alasan Kebutuhan --}}
+                        <div>
+                            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                Alasan / Justifikasi Teknis <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea name="alasan_kebutuhan" rows="3" required placeholder="Tuliskan kendala saat ini dan mengapa perangkat ini dibutuhkan..."
+                                      class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none"></textarea>
+                        </div>
+
+                        {{-- Rekomendasi Spesifikasi --}}
+                        <div>
+                            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                Rekomendasi Spesifikasi / Tipe (Opsional)
+                            </label>
+                            <input type="text" name="rekomendasi_spesifikasi" placeholder="Cth: MikroTik RB4011 / Cisco CBS250 24P / Ruijie Reyee WiFi 6" 
+                                   class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                        </div>
+
+                        {{-- Estimasi Biaya & Nama Pengusul --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Estimasi Anggaran (Rp)
+                                </label>
+                                <input type="number" step="1000" name="estimasi_biaya" placeholder="Cth: 3500000" 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Nama Pengusul
+                                </label>
+                                <input type="text" name="nama_pengusul" value="{{ auth()->user()->name }}" 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-emerald-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        {{-- Footer Buttons --}}
+                        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                            <button type="button" @click="closeProposalModal()" 
+                                    class="px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 text-slate-300 hover:bg-slate-800 transition">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    class="px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md hover:from-emerald-700 hover:to-teal-700 transition">
+                                Simpan Usulan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+        @endif
+
+        {{-- ===== MODAL EDIT USULAN BARU OPD INI ===== --}}
+        @if(auth()->check() && auth()->user()->isAdmin())
+        <template x-teleport="body">
+            <div x-show="proposalEditModalOpen" 
+                 x-cloak 
+                 class="fixed inset-0 flex items-center justify-center p-4 select-none"
+                 style="z-index: 999999; background: rgba(5, 8, 15, 0.78); backdrop-filter: blur(8px);"
+                 @keydown.escape.window="closeEditProposalModal()"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0">
+                
+                <div @click.away="closeEditProposalModal()" 
+                     class="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl border"
+                     style="background: #161b22; border-color: rgba(245, 158, 11, 0.35); box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 35px rgba(245, 158, 11, 0.15);">
+                    
+                    {{-- Modal Header --}}
+                    <div class="flex items-center justify-between px-6 py-4"
+                         style="background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                        <div class="flex items-center gap-3">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #fbbf24; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-white">Edit Usulan Perangkat Baru</h3>
+                                <p class="text-xs text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
+                                    <span>📍</span>
+                                    <span>{{ $opdLocation->nama }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" @click="closeEditProposalModal()" 
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    {{-- Form --}}
+                    <form method="POST" :action="editProposalData.actionUrl" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="opd_location_id" value="{{ $opdLocation->id }}">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {{-- Tipe Perangkat --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Tipe Perangkat <span class="text-rose-500">*</span>
+                                </label>
+                                <select name="tipe_perangkat" x-model="editProposalData.tipe_perangkat" required 
+                                        class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                                    @foreach(['Router','Switch','Access Point','Modem','Firewall','Server','Converter FO','Kabel & Aksesoris','Lainnya'] as $t)
+                                        <option value="{{ $t }}">{{ $t }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Jumlah Unit --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Jumlah Kebutuhan (Unit) <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="number" name="jumlah" x-model="editProposalData.jumlah" min="1" required 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {{-- Lokasi Ruang --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Ruangan / Lokasi Penempatan
+                                </label>
+                                <input type="text" name="lokasi_ruang" x-model="editProposalData.lokasi_ruang" list="opd-rooms-datalist-edit" 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                                <datalist id="opd-rooms-datalist-edit">
+                                    @foreach($pemasanganList as $room)
+                                        <option value="{{ $room }}"></option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+
+                            {{-- Tingkat Urgensi --}}
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Tingkat Urgensi <span class="text-rose-500">*</span>
+                                </label>
+                                <select name="urgensi" x-model="editProposalData.urgensi" required 
+                                        class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                                    <option value="Tinggi">Tinggi &mdash; Mendesak / Kritis</option>
+                                    <option value="Sedang">Sedang &mdash; Kebutuhan Standar</option>
+                                    <option value="Rendah">Rendah &mdash; Rencana Cadangan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Status Usulan --}}
+                        <div>
+                            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                Status Usulan <span class="text-rose-500">*</span>
+                            </label>
+                            <select name="status" x-model="editProposalData.status" required 
+                                    class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                                <option value="Diusulkan">Diusulkan &mdash; Menunggu Tindak Lanjut</option>
+                                <option value="Disetujui">Disetujui &mdash; Siap Diajukan Anggaran</option>
+                                <option value="Dalam Pengadaan">Dalam Pengadaan &mdash; Proses Tender / Pembelian</option>
+                                <option value="Terealisasi">Terealisasi &mdash; Perangkat Sudah Terpasang</option>
+                                <option value="Ditolak">Ditolak &mdash; Tidak Disetujui</option>
+                            </select>
+                        </div>
+
+                        {{-- Alasan Kebutuhan --}}
+                        <div>
+                            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                Alasan / Justifikasi Teknis <span class="text-rose-500">*</span>
+                            </label>
+                            <textarea name="alasan_kebutuhan" x-model="editProposalData.alasan_kebutuhan" rows="3" required 
+                                      class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none"></textarea>
+                        </div>
+
+                        {{-- Rekomendasi Spesifikasi --}}
+                        <div>
+                            <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                Rekomendasi Spesifikasi / Tipe (Opsional)
+                            </label>
+                            <input type="text" name="rekomendasi_spesifikasi" x-model="editProposalData.rekomendasi_spesifikasi" 
+                                   class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                        </div>
+
+                        {{-- Estimasi Biaya & Catatan --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Estimasi Anggaran (Rp)
+                                </label>
+                                <input type="number" step="1000" name="estimasi_biaya" x-model="editProposalData.estimasi_biaya" 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">
+                                    Catatan / Keterangan
+                                </label>
+                                <input type="text" name="catatan" x-model="editProposalData.catatan" 
+                                       class="w-full text-xs rounded-xl border border-slate-700 bg-slate-900 text-white p-2.5 focus:border-amber-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        {{-- Footer Buttons --}}
+                        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                            <button type="button" @click="closeEditProposalModal()" 
+                                    class="px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 text-slate-300 hover:bg-slate-800 transition">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    class="px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md hover:from-amber-700 hover:to-orange-700 transition">
+                                Update Usulan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
         @endif
 
     </div>

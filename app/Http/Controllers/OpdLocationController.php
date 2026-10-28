@@ -88,7 +88,10 @@ class OpdLocationController extends Controller
             return $device->lokasi_pemasangan ?: 'Belum Ditentukan';
         })->sortKeys();
 
-        return view('opd-locations.show', compact('opdLocation', 'devices', 'pemasanganList', 'groupedDevices'));
+        // Load proposals specifically for this OPD
+        $proposals = $opdLocation->deviceProposals()->latest()->get();
+
+        return view('opd-locations.show', compact('opdLocation', 'devices', 'pemasanganList', 'groupedDevices', 'proposals'));
     }
 
     public function edit(OpdLocation $opdLocation)

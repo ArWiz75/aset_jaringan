@@ -127,6 +127,16 @@ class DeviceProposalController extends Controller
 
         DeviceProposal::create($validated);
 
+        if ($request->filled('redirect_to_opd') || $request->filled('return_to_opd')) {
+            return redirect()->route('opd-locations.show', $validated['opd_location_id'])
+                ->with('success', 'Usulan perangkat baru berhasil diajukan untuk OPD ini.');
+        }
+
+        if ($request->filled('filter_opd')) {
+            return redirect()->route('device-proposals.index', ['opd_location_id' => $request->filter_opd])
+                ->with('success', 'Usulan penambahan perangkat berhasil diajukan.');
+        }
+
         return redirect()->route('device-proposals.index')->with('success', 'Usulan penambahan perangkat berhasil diajukan dan tercatat ke sistem.');
     }
 
@@ -234,6 +244,11 @@ class DeviceProposalController extends Controller
             'status' => 'Diusulkan',
             'catatan' => 'Paket Usulan Pengadaan Jaringan Baru (Auto-Generated)'
         ]);
+
+        if ($request->filled('redirect_to_opd') || $request->filled('return_to_opd')) {
+            return redirect()->route('opd-locations.show', $opdLocation->id)
+                ->with('success', 'Paket usulan pengadaan starter internet untuk ' . $opdLocation->nama . ' (Router, Switch, & 2 AP WiFi) berhasil dibuat!');
+        }
 
         return redirect()->route('device-proposals.index', ['opd_location_id' => $opdLocation->id])
             ->with('success', 'Paket usulan pengadaan starter internet untuk ' . $opdLocation->nama . ' (Router, Switch, & 2 AP WiFi) berhasil dibuat!');
