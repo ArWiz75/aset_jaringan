@@ -6,66 +6,76 @@ use App\Models\Device;
 use App\Models\DeviceProposal;
 use App\Models\OpdLocation;
 use App\Models\MaintenanceLog;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $totalDevices = Device::count();
-        $activeDevices = Device::where('status', 'Aktif')->count();
-        $replaceDevices = Device::where('status', 'Perlu Diganti')->count();
-        $brokenDevices = Device::where('status', 'Rusak')->count();
-        $maintenanceDevices = Device::where('status', 'Maintenance')->count();
-        $inactiveDevices = Device::where('status', 'Nonaktif')->count();
-        $totalLocations = OpdLocation::count();
-        $totalMaintenance = MaintenanceLog::count();
-        $pendingMaintenance = MaintenanceLog::where('status', 'Pending')->count();
+        // Satu query untuk semua stat perangkat berdasarkan status
+        $deviceStats = Device::selectRaw('
+            COUNT(*) as total,
+            SUM(status = "Aktif") as aktif,
+            SUM(status = "Perlu Diganti") as perlu_diganti,
+            SUM(status = "Rusak") as rusak,
+            SUM(status = "Maintenance") as maintenance,
+            SUM(status = "Nonaktif") as nonaktif
+        ')->first();
 
-        // Usulan & OPD Belum Terpasang Perangkat
-        $totalProposals = DeviceProposal::count();
-        $pendingProposals = DeviceProposal::whereIn('status', ['Diusulkan', 'Dalam Pengadaan'])->count();
-        $emptyLocations = OpdLocation::withCount('devices')->having('devices_count', 0)->count();
+        // Satu query untuk semua stat maintenance
+        $maintenanceStats = MaintenanceLog::selectRaw('
+            COUNT(*) as total,
+            SUM(status = "Pending") as pending
+        ')->first();
 
-        // Device count by type for chart
-        $devicesByType = Device::selectRaw('tipe, COUNT(*) as total')
+        // Satu query untuk stat proposal
+        $proposalStats = DeviceProposal::selectRaw('
+            COUNT(*) as total,
+            SUM(status IN ("Diusulkan","Dalam Pengadaan")) as pending
+        ')->first();
+
+        $totalLocations  = OpdLocation::count();
+        $emptyLocations  = OpdLocation::withCount('devices')
+            ->having('devices_count', 0)
+            ->count();
+
+        // Chart: jumlah perangkat per tipe & per status
+        $devicesByType   = Device::selectRaw('tipe, COUNT(*) as total')
             ->groupBy('tipe')
             ->pluck('total', 'tipe');
 
-        // Device count by status for chart
         $devicesByStatus = Device::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
 
-        // Recent maintenance logs
-        $recentMaintenance = MaintenanceLog::with(['device', 'user'])
+        // 5 log maintenance terbaru
+        $recentMaintenance = MaintenanceLog::with(['device:id,merk,model,opd_location_id', 'device.opdLocation:id,nama', 'user:id,name'])
             ->orderBy('tanggal', 'desc')
             ->limit(5)
             ->get();
 
-        // Devices per location
+        // Top 10 lokasi OPD berdasarkan jumlah perangkat
         $devicesPerLocation = OpdLocation::withCount('devices')
             ->orderBy('devices_count', 'desc')
             ->limit(10)
-            ->get();
+            ->get(['id', 'nama', 'kecamatan']);
 
-        return view('dashboard', compact(
-            'totalDevices',
-            'activeDevices',
-            'replaceDevices',
-            'brokenDevices',
-            'maintenanceDevices',
-            'inactiveDevices',
-            'totalLocations',
-            'totalMaintenance',
-            'pendingMaintenance',
-            'totalProposals',
-            'pendingProposals',
-            'emptyLocations',
-            'devicesByType',
-            'devicesByStatus',
-            'recentMaintenance',
-            'devicesPerLocation'
-        ));
+        return view('dashboard', [
+            'totalDevices'       => $deviceStats->total,
+            'activeDevices'      => $deviceStats->aktif,
+            'replaceDevices'     => $deviceStats->perlu_diganti,
+            'brokenDevices'      => $deviceStats->rusak,
+            'maintenanceDevices' => $deviceStats->maintenance,
+            'inactiveDevices'    => $deviceStats->nonaktif,
+            'totalLocations'     => $totalLocations,
+            'totalMaintenance'   => $maintenanceStats->total,
+            'pendingMaintenance' => $maintenanceStats->pending,
+            'totalProposals'     => $proposalStats->total,
+            'pendingProposals'   => $proposalStats->pending,
+            'emptyLocations'     => $emptyLocations,
+            'devicesByType'      => $devicesByType,
+            'devicesByStatus'    => $devicesByStatus,
+            'recentMaintenance'  => $recentMaintenance,
+            'devicesPerLocation' => $devicesPerLocation,
+        ]);
     }
 }

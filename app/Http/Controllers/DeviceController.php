@@ -40,15 +40,25 @@ class DeviceController extends Controller
         }
 
         $devices = $query->orderBy('created_at', 'desc')->paginate(15);
-        $locations = OpdLocation::orderBy('nama')->get();
+        $locations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
+
+        // Satu query untuk semua stat status (menggantikan 6 query terpisah)
+        $rawStats = Device::selectRaw('
+            COUNT(*) as total,
+            SUM(status = "Aktif") as aktif,
+            SUM(status = "Perlu Diganti") as perlu_diganti,
+            SUM(status = "Rusak") as rusak,
+            SUM(status = "Maintenance") as maintenance,
+            SUM(status = "Nonaktif") as nonaktif
+        ')->first();
 
         $statusCounts = [
-            'total' => Device::count(),
-            'Aktif' => Device::where('status', 'Aktif')->count(),
-            'Perlu Diganti' => Device::where('status', 'Perlu Diganti')->count(),
-            'Rusak' => Device::where('status', 'Rusak')->count(),
-            'Maintenance' => Device::where('status', 'Maintenance')->count(),
-            'Nonaktif' => Device::where('status', 'Nonaktif')->count(),
+            'total'         => $rawStats->total,
+            'Aktif'         => $rawStats->aktif,
+            'Perlu Diganti' => $rawStats->perlu_diganti,
+            'Rusak'         => $rawStats->rusak,
+            'Maintenance'   => $rawStats->maintenance,
+            'Nonaktif'      => $rawStats->nonaktif,
         ];
 
         return view('devices.index', compact('devices', 'locations', 'statusCounts'));
@@ -56,7 +66,7 @@ class DeviceController extends Controller
 
     public function create()
     {
-        $locations = OpdLocation::orderBy('nama')->get();
+        $locations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
         return view('devices.create', compact('locations'));
     }
 
@@ -104,7 +114,7 @@ class DeviceController extends Controller
 
     public function edit(Device $device)
     {
-        $locations = OpdLocation::orderBy('nama')->get();
+        $locations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
         return view('devices.edit', compact('device', 'locations'));
     }
 

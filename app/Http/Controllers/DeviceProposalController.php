@@ -52,12 +52,20 @@ class DeviceProposalController extends Controller
 
         $proposals = $query->latest()->paginate(15)->withQueryString();
 
-        // Statistik Utama
-        $totalUsulan = DeviceProposal::count();
-        $totalUnit = DeviceProposal::sum('jumlah');
-        $totalBiaya = DeviceProposal::sum('estimasi_biaya');
-        $pendingUsulan = DeviceProposal::whereIn('status', ['Diusulkan', 'Dalam Pengadaan'])->count();
-        $disetujuiUsulan = DeviceProposal::where('status', 'Disetujui')->count();
+        // Satu query untuk semua statistik (menggantikan 5 query terpisah)
+        $stats = DeviceProposal::selectRaw('
+            COUNT(*) as total,
+            COALESCE(SUM(jumlah), 0) as total_unit,
+            COALESCE(SUM(estimasi_biaya), 0) as total_biaya,
+            SUM(status IN ("Diusulkan","Dalam Pengadaan")) as pending,
+            SUM(status = "Disetujui") as disetujui
+        ')->first();
+
+        $totalUsulan    = $stats->total;
+        $totalUnit      = $stats->total_unit;
+        $totalBiaya     = $stats->total_biaya;
+        $pendingUsulan  = $stats->pending;
+        $disetujuiUsulan = $stats->disetujui;
 
         // DETEKSI OTOMATIS: OPD yang BELUM memiliki perangkat internet sama sekali (devices_count == 0)
         $emptyOpds = OpdLocation::withCount(['devices', 'networks'])
@@ -65,7 +73,7 @@ class DeviceProposalController extends Controller
             ->get();
 
         // Daftar semua OPD untuk dropdown form & filter
-        $opdLocations = OpdLocation::orderBy('nama')->get();
+        $opdLocations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
 
         $tipeList = [
             'Router',

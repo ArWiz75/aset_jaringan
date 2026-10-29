@@ -17,9 +17,15 @@ use Illuminate\Http\Request;
 
 class ExportController extends Controller
 {
-    public function exportDevicesPdf(Request $request)
+    // ===== PRIVATE HELPERS: Menghilangkan duplikasi filter query =====
+
+    /**
+     * Bangun query Device berdasarkan filter request yang sama
+     * (dipakai oleh exportDevicesPdf, exportDevicesExcel, printDevices).
+     */
+    private function buildDeviceQuery(Request $request)
     {
-        $query = Device::with('opdLocation');
+        $query = Device::with('opdLocation:id,nama');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -34,7 +40,77 @@ class ExportController extends Controller
             $query->where('lokasi_pemasangan', $request->lokasi);
         }
 
-        $devices = $query->orderBy('merk')->get();
+        return $query;
+    }
+
+    /**
+     * Bangun query Device penggantian berdasarkan filter request.
+     * (dipakai oleh printReplacement, exportReplacementPdf, exportReplacementExcel)
+     */
+    private function buildReplacementQuery(Request $request)
+    {
+        $query = Device::with('opdLocation:id,nama');
+
+        $status = $request->filled('status') ? $request->status : 'Perlu Diganti';
+        $query->where('status', $status);
+
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Bangun query MaintenanceLog berdasarkan filter request.
+     * (dipakai oleh exportMaintenancePdf, exportMaintenanceExcel, printMaintenance)
+     */
+    private function buildMaintenanceQuery(Request $request)
+    {
+        $query = MaintenanceLog::with(['device:id,merk,nomor_seri,opd_location_id', 'device.opdLocation:id,nama', 'user:id,name']);
+
+        if ($request->filled('jenis')) {
+            $query->where('jenis', $request->jenis);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Bangun query DeviceProposal berdasarkan filter request.
+     * (dipakai oleh printProposal, exportProposalPdf, exportProposalExcel)
+     */
+    private function buildProposalQuery(Request $request)
+    {
+        $query = DeviceProposal::with('opdLocation:id,nama');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('urgensi')) {
+            $query->where('urgensi', $request->urgensi);
+        }
+        if ($request->filled('opd_location_id')) {
+            $query->where('opd_location_id', $request->opd_location_id);
+        }
+        if ($request->filled('tipe_perangkat')) {
+            $query->where('tipe_perangkat', $request->tipe_perangkat);
+        }
+
+        return $query;
+    }
+
+    // ===== DEVICES =====
+
+    public function exportDevicesPdf(Request $request)
+    {
+        $devices  = $this->buildDeviceQuery($request)->orderBy('merk')->get();
         $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         $pdf = Pdf::loadView('exports.devices-pdf', compact('devices', 'location'))
@@ -45,22 +121,7 @@ class ExportController extends Controller
 
     public function exportDevicesExcel(Request $request)
     {
-        $query = Device::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('lokasi')) {
-            $query->where('lokasi_pemasangan', $request->lokasi);
-        }
-
-        $devices = $query->orderBy('merk')->get();
+        $devices = $this->buildDeviceQuery($request)->orderBy('merk')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -141,16 +202,7 @@ class ExportController extends Controller
 
     public function exportMaintenancePdf(Request $request)
     {
-        $query = MaintenanceLog::with(['device.opdLocation', 'user']);
-
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $logs = $query->orderBy('tanggal', 'desc')->get();
+        $logs = $this->buildMaintenanceQuery($request)->orderBy('tanggal', 'desc')->get();
 
         $pdf = Pdf::loadView('exports.maintenance-pdf', compact('logs'))
             ->setPaper('a4', 'landscape');
@@ -160,16 +212,7 @@ class ExportController extends Controller
 
     public function exportMaintenanceExcel(Request $request)
     {
-        $query = MaintenanceLog::with(['device.opdLocation', 'user']);
-
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $logs = $query->orderBy('tanggal', 'desc')->get();
+        $logs = $this->buildMaintenanceQuery($request)->orderBy('tanggal', 'desc')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -223,22 +266,7 @@ class ExportController extends Controller
 
     public function printDevices(Request $request)
     {
-        $query = Device::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('lokasi')) {
-            $query->where('lokasi_pemasangan', $request->lokasi);
-        }
-
-        $devices = $query->orderBy('merk')->get();
+        $devices  = $this->buildDeviceQuery($request)->orderBy('merk')->get();
         $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         return view('exports.devices-print', compact('devices', 'location'));
@@ -246,16 +274,7 @@ class ExportController extends Controller
 
     public function printMaintenance(Request $request)
     {
-        $query = MaintenanceLog::with(['device.opdLocation', 'user']);
-
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $logs = $query->orderBy('tanggal', 'desc')->get();
+        $logs = $this->buildMaintenanceQuery($request)->orderBy('tanggal', 'desc')->get();
         return view('exports.maintenance-print', compact('logs'));
     }
 
@@ -264,26 +283,10 @@ class ExportController extends Controller
      */
     public function printReplacement(Request $request)
     {
-        $query = Device::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        } else {
-            // Default: ambil yang Perlu Diganti atau Rusak jika diinginkan, default Perlu Diganti
-            $query->where('status', 'Perlu Diganti');
-        }
-
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-
-        $devices = $query->orderBy('opd_location_id')->orderBy('merk')->get();
-        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $devices    = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
+        $location   = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
         $totalBiaya = $devices->sum('estimasi_biaya');
-        $totalOpd = $devices->pluck('opd_location_id')->unique()->count();
+        $totalOpd   = $devices->pluck('opd_location_id')->unique()->count();
 
         return view('exports.replacement-print', compact('devices', 'location', 'totalBiaya', 'totalOpd'));
     }
@@ -293,25 +296,10 @@ class ExportController extends Controller
      */
     public function exportReplacementPdf(Request $request)
     {
-        $query = Device::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        } else {
-            $query->where('status', 'Perlu Diganti');
-        }
-
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-
-        $devices = $query->orderBy('opd_location_id')->orderBy('merk')->get();
-        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $devices    = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
+        $location   = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
         $totalBiaya = $devices->sum('estimasi_biaya');
-        $totalOpd = $devices->pluck('opd_location_id')->unique()->count();
+        $totalOpd   = $devices->pluck('opd_location_id')->unique()->count();
 
         $pdf = Pdf::loadView('exports.replacement-pdf', compact('devices', 'location', 'totalBiaya', 'totalOpd'))
             ->setPaper('a4', 'landscape');
@@ -324,22 +312,7 @@ class ExportController extends Controller
      */
     public function exportReplacementExcel(Request $request)
     {
-        $query = Device::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        } else {
-            $query->where('status', 'Perlu Diganti');
-        }
-
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('tipe')) {
-            $query->where('tipe', $request->tipe);
-        }
-
-        $devices = $query->orderBy('opd_location_id')->orderBy('merk')->get();
+        $devices = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -444,29 +417,12 @@ class ExportController extends Controller
      */
     public function printProposal(Request $request)
     {
-        $query = DeviceProposal::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('urgensi')) {
-            $query->where('urgensi', $request->urgensi);
-        }
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('tipe_perangkat')) {
-            $query->where('tipe_perangkat', $request->tipe_perangkat);
-        }
-
-        $proposals = $query->orderBy('opd_location_id')->orderBy('urgensi', 'asc')->get();
-        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $proposals  = $this->buildProposalQuery($request)->orderBy('opd_location_id')->orderBy('urgensi')->get();
+        $location   = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
         $totalBiaya = $proposals->sum('estimasi_biaya');
-        $totalUnit = $proposals->sum('jumlah');
-        $totalOpd = $proposals->pluck('opd_location_id')->unique()->count();
-
-        // OPD tanpa perangkat
-        $emptyOpds = OpdLocation::withCount('devices')->having('devices_count', 0)->get();
+        $totalUnit  = $proposals->sum('jumlah');
+        $totalOpd   = $proposals->pluck('opd_location_id')->unique()->count();
+        $emptyOpds  = OpdLocation::withCount('devices')->having('devices_count', 0)->get(['id', 'nama', 'kecamatan']);
 
         return view('exports.device-proposal-print', compact('proposals', 'location', 'totalBiaya', 'totalUnit', 'totalOpd', 'emptyOpds'));
     }
@@ -476,27 +432,12 @@ class ExportController extends Controller
      */
     public function exportProposalPdf(Request $request)
     {
-        $query = DeviceProposal::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('urgensi')) {
-            $query->where('urgensi', $request->urgensi);
-        }
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('tipe_perangkat')) {
-            $query->where('tipe_perangkat', $request->tipe_perangkat);
-        }
-
-        $proposals = $query->orderBy('opd_location_id')->orderBy('urgensi', 'asc')->get();
-        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
+        $proposals  = $this->buildProposalQuery($request)->orderBy('opd_location_id')->orderBy('urgensi')->get();
+        $location   = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
         $totalBiaya = $proposals->sum('estimasi_biaya');
-        $totalUnit = $proposals->sum('jumlah');
-        $totalOpd = $proposals->pluck('opd_location_id')->unique()->count();
-        $emptyOpds = OpdLocation::withCount('devices')->having('devices_count', 0)->get();
+        $totalUnit  = $proposals->sum('jumlah');
+        $totalOpd   = $proposals->pluck('opd_location_id')->unique()->count();
+        $emptyOpds  = OpdLocation::withCount('devices')->having('devices_count', 0)->get(['id', 'nama', 'kecamatan']);
 
         $pdf = Pdf::loadView('exports.device-proposal-pdf', compact('proposals', 'location', 'totalBiaya', 'totalUnit', 'totalOpd', 'emptyOpds'))
             ->setPaper('a4', 'landscape');
@@ -509,22 +450,7 @@ class ExportController extends Controller
      */
     public function exportProposalExcel(Request $request)
     {
-        $query = DeviceProposal::with('opdLocation');
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('urgensi')) {
-            $query->where('urgensi', $request->urgensi);
-        }
-        if ($request->filled('opd_location_id')) {
-            $query->where('opd_location_id', $request->opd_location_id);
-        }
-        if ($request->filled('tipe_perangkat')) {
-            $query->where('tipe_perangkat', $request->tipe_perangkat);
-        }
-
-        $proposals = $query->orderBy('opd_location_id')->get();
+        $proposals = $this->buildProposalQuery($request)->orderBy('opd_location_id')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

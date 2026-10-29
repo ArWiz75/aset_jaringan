@@ -33,18 +33,25 @@ class MaintenanceLogController extends Controller
 
         $logs = $query->orderBy('tanggal', 'desc')->paginate(15);
 
-        // Stats untuk stat cards
-        $totalLogs    = MaintenanceLog::count();
-        $selesai      = MaintenanceLog::where('status', 'Selesai')->count();
-        $pending      = MaintenanceLog::where('status', 'Pending')->count();
-        $dalamProses  = MaintenanceLog::where('status', 'Dalam Proses')->count();
+        // Satu query untuk semua stat (menggantikan 4 query terpisah)
+        $stats = MaintenanceLog::selectRaw('
+            COUNT(*) as total,
+            SUM(status = "Selesai") as selesai,
+            SUM(status = "Pending") as pending,
+            SUM(status = "Dalam Proses") as dalam_proses
+        ')->first();
+
+        $totalLogs   = $stats->total;
+        $selesai     = $stats->selesai;
+        $pending     = $stats->pending;
+        $dalamProses = $stats->dalam_proses;
 
         return view('maintenance-logs.index', compact('logs', 'totalLogs', 'selesai', 'pending', 'dalamProses'));
     }
 
     public function create(Request $request)
     {
-        $devices = Device::with('opdLocation')->orderBy('merk')->get();
+        $devices = Device::with('opdLocation:id,nama')->orderBy('merk')->get(['id', 'merk', 'model', 'tipe', 'opd_location_id']);
         $selectedDeviceId = $request->get('device_id');
         return view('maintenance-logs.create', compact('devices', 'selectedDeviceId'));
     }
@@ -77,7 +84,7 @@ class MaintenanceLogController extends Controller
 
     public function edit(MaintenanceLog $maintenanceLog)
     {
-        $devices = Device::with('opdLocation')->orderBy('merk')->get();
+        $devices = Device::with('opdLocation:id,nama')->orderBy('merk')->get(['id', 'merk', 'model', 'tipe', 'opd_location_id']);
         return view('maintenance-logs.edit', compact('maintenanceLog', 'devices'));
     }
 

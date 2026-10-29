@@ -21,6 +21,8 @@ class OpdLocation extends Model
         'denah_file',
     ];
 
+    // ===== RELATIONSHIPS =====
+
     public function networks()
     {
         return $this->hasMany(OpdNetwork::class);
@@ -36,13 +38,23 @@ class OpdLocation extends Model
         return $this->hasMany(DeviceProposal::class);
     }
 
-    public function activeDevicesCount()
+    // ===== SCOPES =====
+
+    /**
+     * Scope: urutkan abjad case-insensitive.
+     * Contoh: OpdLocation::alphabetical()->get()
+     */
+    public function scopeAlphabetical($query)
     {
-        return $this->devices()->where('status', 'Aktif')->count();
+        return $query->orderByRaw('LOWER(nama) ASC');
     }
 
-    public function totalDevicesCount()
+    /**
+     * Scope: OPD yang belum memiliki perangkat sama sekali.
+     * Contoh: OpdLocation::empty()->get()
+     */
+    public function scopeEmpty($query)
     {
-        return $this->devices()->count();
+        return $query->withCount('devices')->having('devices_count', 0);
     }
 }
