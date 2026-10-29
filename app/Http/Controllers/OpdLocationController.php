@@ -22,7 +22,7 @@ class OpdLocationController extends Controller
             });
         }
 
-        $locations = $query->with('networks')->orderBy('nama')->paginate(15);
+        $locations = $query->with('networks')->orderByRaw('LOWER(nama) ASC')->paginate(15);
 
         return view('opd-locations.index', compact('locations'));
     }
