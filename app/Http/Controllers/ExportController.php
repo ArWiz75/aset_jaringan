@@ -319,8 +319,8 @@ class ExportController extends Controller
         $sheet->setTitle('Rencana Penggantian Aset');
 
         // Header Title
-        $sheet->setCellValue('A1', 'USULAN PERENCANAAN PENGGANTIAN DAN PENGADAAN PERANGKAT JARINGAN');
-        $sheet->setCellValue('A2', 'DINAS KOMUNIKASI DAN INFORMATIKA - Tanggal Cetak: ' . date('d F Y'));
+        $sheet->setCellValue('A1', 'PEMERINTAH KABUPATEN JEMBRANA - DINAS KOMUNIKASI DAN INFORMATIKA');
+        $sheet->setCellValue('A2', 'USULAN PERENCANAAN PENGGANTIAN DAN PENGADAAN PERANGKAT JARINGAN - ' . date('d F Y'));
         $sheet->mergeCells('A1:L1');
         $sheet->mergeCells('A2:L2');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
@@ -457,8 +457,8 @@ class ExportController extends Controller
         $sheet->setTitle('Usulan Penambahan Perangkat');
 
         // Header Title
-        $sheet->setCellValue('A1', 'DAFTAR REKOMENDASI DAN USULAN PENAMBAHAN PERANGKAT JARINGAN');
-        $sheet->setCellValue('A2', 'DINAS KOMUNIKASI DAN INFORMATIKA - Tanggal: ' . date('d F Y'));
+        $sheet->setCellValue('A1', 'PEMERINTAH KABUPATEN JEMBRANA - DINAS KOMUNIKASI DAN INFORMATIKA');
+        $sheet->setCellValue('A2', 'DAFTAR REKOMENDASI DAN USULAN PENAMBAHAN PERANGKAT JARINGAN - ' . date('d F Y'));
         $sheet->mergeCells('A1:K1');
         $sheet->mergeCells('A2:K2');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);

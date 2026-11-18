@@ -241,14 +241,8 @@
 <body>
 
     <div class="page-container">
-        {{-- KOP SURAT --}}
-        <div class="kop-surat">
-            <div class="kop-text">
-                <h2>Pemerintah Daerah &bull; Dinas Komunikasi dan Informatika</h2>
-                <h1>Laporan Rekomendasi &amp; Usulan Penambahan Perangkat Jaringan</h1>
-                <p>Bidang Penyelenggaraan E-Government &amp; Tata Kelola Infrastruktur Teknologi Informasi</p>
-            </div>
-        </div>
+        {{-- KOP SURAT RESMI --}}
+        <x-kop-surat />
 
         {{-- DOCUMENT TITLE --}}
         <div class="doc-title-container">

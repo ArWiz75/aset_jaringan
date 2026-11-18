@@ -1,30 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Laporan Log Maintenance</title>
+    <title>Laporan Log Maintenance – DISKOMINFO Jembrana</title>
+    @include('partials.kop-styles')
     <style>
-        body { font-family: Arial, sans-serif; font-size: 11px; color: #333; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
-        .header h1 { font-size: 16px; margin: 0; color: #334155; }
-        .header p { margin: 2px 0; font-size: 10px; color: #666; }
+        body { font-family: Arial, sans-serif; font-size: 10.5px; color: #1e293b; margin: 0; padding: 16px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background-color: #334155; color: white; padding: 6px 8px; text-align: left; font-size: 10px; }
-        td { padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 10px; }
+        th { background-color: #1e293b; color: white; padding: 6px 7px; text-align: left; font-size: 9.5px; text-transform: uppercase; }
+        td { padding: 5px 7px; border-bottom: 1px solid #cbd5e1; font-size: 9.5px; }
         tr:nth-child(even) { background-color: #f8fafc; }
-        .footer { margin-top: 20px; text-align: right; font-size: 9px; color: #999; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>LAPORAN LOG MAINTENANCE JARINGAN</h1>
-        <p>Dinas Komunikasi dan Informatika</p>
-        <p>Tanggal Cetak: {{ date('d F Y') }}</p>
+    {{-- KOP SURAT (mode PDF = base64) --}}
+    <x-kop-surat :forPdf="true" />
+
+    <div class="kop-judul-wrap">
+        <div class="kop-judul">Laporan Log Maintenance Jaringan</div>
+        <div class="kop-sub-judul">Dinas Komunikasi dan Informatika – Kabupaten Jembrana</div>
     </div>
+
+    <div class="meta-info-bar">
+        <span><strong>Tanggal Cetak:</strong> {{ date('d F Y') }}</span>
+        <span><strong>Total:</strong> {{ $logs->count() }} log</span>
+        <span><strong>Dicetak:</strong> {{ auth()->user()->name ?? 'System' }}</span>
+    </div>
+
     <table>
         <thead>
             <tr>
-                <th>No</th><th>Perangkat</th><th>Lokasi</th><th>Jenis</th><th>Deskripsi</th><th>Tanggal</th><th>Biaya</th><th>Status</th><th>Teknisi</th>
+                <th>No</th><th>Perangkat</th><th>Lokasi</th><th>Jenis</th>
+                <th>Deskripsi</th><th>Tanggal</th><th>Biaya</th><th>Status</th><th>Teknisi</th>
             </tr>
         </thead>
         <tbody>
@@ -43,7 +50,12 @@
             @endforeach
         </tbody>
     </table>
+
     <p style="margin-top:10px; font-size:10px;">Total: {{ $logs->count() }} log maintenance</p>
-    <div class="footer">Dicetak oleh: {{ auth()->user()->name ?? 'System' }}</div>
+
+    <div class="print-footer">
+        <span>Sistem Informasi Manajemen Aset Jaringan – DISKOMINFO Jembrana</span>
+        <span>Dicetak: {{ auth()->user()->name ?? 'System' }}</span>
+    </div>
 </body>
 </html>

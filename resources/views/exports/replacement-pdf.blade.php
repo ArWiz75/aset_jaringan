@@ -171,10 +171,11 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h3>Pemerintah Daerah &bull; Dinas Komunikasi dan Informatika</h3>
-        <h1>Laporan Rekomendasi Penggantian & Usulan Pengadaan Perangkat</h1>
-        <p>Bidang Penyelenggaraan E-Government & Infrastruktur TIK | Sistem Manajemen Aset Jaringan</p>
+    {{-- KOP SURAT RESMI --}}
+    <x-kop-surat :forPdf="true" />
+
+    <div class="doc-title-container">
+        <div class="doc-title">LAPORAN REKOMENDASI PENGGANTIAN &amp; USULAN PENGADAAN PERANGKAT</div>
     </div>
 
     <table class="meta-table">

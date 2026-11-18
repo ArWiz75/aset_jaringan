@@ -101,11 +101,8 @@
 </head>
 <body>
 
-    <div class="kop-surat">
-        <h2>Pemerintah Daerah &bull; Dinas Komunikasi dan Informatika</h2>
-        <h1>Laporan Rekomendasi &amp; Usulan Penambahan Perangkat Jaringan</h1>
-        <p>Bidang Penyelenggaraan E-Government &amp; Tata Kelola Infrastruktur Teknologi Informasi</p>
-    </div>
+    {{-- KOP SURAT RESMI (DomPDF) --}}
+    <x-kop-surat :forPdf="true" />
 
     <div class="doc-title">DAFTAR USULAN PENGADAAN PERANGKAT JARINGAN BARU</div>
     <div class="doc-sub">

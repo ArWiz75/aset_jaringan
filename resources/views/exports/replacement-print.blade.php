@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -364,15 +364,8 @@
     </div>
 
     <div class="page-container">
-        {{-- Kop Surat Resmi --}}
-        <div class="kop-surat">
-            <div class="kop-text">
-                <h2>Pemerintah Daerah</h2>
-                <h1>Dinas Komunikasi dan Informatika</h1>
-                <p>Bidang Penyelenggaraan E-Government & Infrastruktur Teknologi Informasi</p>
-                <p>Sistem Informasi Manajemen Aset Jaringan (SIM-AJ)</p>
-            </div>
-        </div>
+        {{-- KOP SURAT RESMI --}}
+        <x-kop-surat />
 
         {{-- Judul Laporan --}}
         <div class="doc-title-container">
