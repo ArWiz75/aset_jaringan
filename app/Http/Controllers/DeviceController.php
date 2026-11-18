@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Device;
 use App\Models\OpdLocation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class DeviceController extends Controller
@@ -40,33 +41,35 @@ class DeviceController extends Controller
         }
 
         $devices = $query->orderBy('created_at', 'desc')->paginate(15);
-        $locations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
+        $locations = Cache::remember('opd_locations_dropdown', 300, fn() => OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']));
 
-        // Satu query untuk semua stat status (menggantikan 6 query terpisah)
-        $rawStats = Device::selectRaw('
-            COUNT(*) as total,
-            SUM(status = "Aktif") as aktif,
-            SUM(status = "Perlu Diganti") as perlu_diganti,
-            SUM(status = "Rusak") as rusak,
-            SUM(status = "Maintenance") as maintenance,
-            SUM(status = "Nonaktif") as nonaktif
-        ')->first();
+        // Cache status counts untuk performa maksimal pada paging & filter
+        $statusCounts = Cache::remember('device_status_counts', 30, function () {
+            $rawStats = Device::selectRaw('
+                COUNT(*) as total,
+                SUM(status = "Aktif") as aktif,
+                SUM(status = "Perlu Diganti") as perlu_diganti,
+                SUM(status = "Rusak") as rusak,
+                SUM(status = "Maintenance") as maintenance,
+                SUM(status = "Nonaktif") as nonaktif
+            ')->first();
 
-        $statusCounts = [
-            'total'         => $rawStats->total,
-            'Aktif'         => $rawStats->aktif,
-            'Perlu Diganti' => $rawStats->perlu_diganti,
-            'Rusak'         => $rawStats->rusak,
-            'Maintenance'   => $rawStats->maintenance,
-            'Nonaktif'      => $rawStats->nonaktif,
-        ];
+            return [
+                'total'         => (int) ($rawStats->total ?? 0),
+                'Aktif'         => (int) ($rawStats->aktif ?? 0),
+                'Perlu Diganti' => (int) ($rawStats->perlu_diganti ?? 0),
+                'Rusak'         => (int) ($rawStats->rusak ?? 0),
+                'Maintenance'   => (int) ($rawStats->maintenance ?? 0),
+                'Nonaktif'      => (int) ($rawStats->nonaktif ?? 0),
+            ];
+        });
 
         return view('devices.index', compact('devices', 'locations', 'statusCounts'));
     }
 
     public function create()
     {
-        $locations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
+        $locations = Cache::remember('opd_locations_dropdown', 300, fn() => OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']));
         return view('devices.create', compact('locations'));
     }
 
@@ -114,7 +117,7 @@ class DeviceController extends Controller
 
     public function edit(Device $device)
     {
-        $locations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
+        $locations = Cache::remember('opd_locations_dropdown', 300, fn() => OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']));
         return view('devices.edit', compact('device', 'locations'));
     }
 

@@ -6,8 +6,8 @@
     <meta name="description" content="Sistem Manajemen Aset Jaringan - DISKOMINFO. Kelola infrastruktur jaringan daerah secara modern dan efisien.">
     <title>Manajemen Aset Jaringan - DISKOMINFO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
@@ -382,9 +382,11 @@
     let W, H, stars = [];
     function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
     resize();
-    window.addEventListener('resize', resize);
-    for(let i=0;i<120;i++) stars.push({ x:Math.random(), y:Math.random(), r:Math.random()*1.2+0.2, speed:Math.random()*0.0004+0.0001, offset:Math.random()*Math.PI*2 });
+    window.addEventListener('resize', resize, { passive: true });
+    for(let i=0;i<60;i++) stars.push({ x:Math.random(), y:Math.random(), r:Math.random()*1.2+0.2, speed:Math.random()*0.0004+0.0001, offset:Math.random()*Math.PI*2 });
+    let animId;
     function draw(ts){
+        if (document.hidden) { animId = requestAnimationFrame(draw); return; }
         ctx.clearRect(0,0,W,H);
         stars.forEach(s=>{
             const a = 0.15 + 0.55*Math.abs(Math.sin(ts*s.speed+s.offset));
@@ -393,13 +395,13 @@
             ctx.fillStyle = `rgba(255,255,255,${a})`;
             ctx.fill();
         });
-        requestAnimationFrame(draw);
+        animId = requestAnimationFrame(draw);
     }
-    requestAnimationFrame(draw);
+    animId = requestAnimationFrame(draw);
 })();
 
 const nav = document.getElementById('mainNav');
-window.addEventListener('scroll', ()=>{ nav.classList.toggle('scrolled', window.scrollY > 50); });
+window.addEventListener('scroll', ()=>{ nav.classList.toggle('scrolled', window.scrollY > 50); }, { passive: true });
 
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
     a.addEventListener('click', e=>{

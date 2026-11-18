@@ -25,6 +25,19 @@ class MaintenanceLog extends Model
         'biaya' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('maintenance_status_counts');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('maintenance_status_counts');
+        });
+    }
+
     public function device()
     {
         return $this->belongsTo(Device::class);

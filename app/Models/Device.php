@@ -34,6 +34,21 @@ class Device extends Model
         'estimasi_biaya' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('devices_maintenance_dropdown');
+            \Illuminate\Support\Facades\Cache::forget('device_status_counts');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('devices_maintenance_dropdown');
+            \Illuminate\Support\Facades\Cache::forget('device_status_counts');
+        });
+    }
+
     /**
      * Scope query untuk perangkat yang perlu diganti.
      */

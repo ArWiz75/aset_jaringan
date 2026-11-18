@@ -6,6 +6,7 @@ use App\Models\DeviceProposal;
 use App\Models\OpdLocation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DeviceProposalController extends Controller
 {
@@ -52,28 +53,36 @@ class DeviceProposalController extends Controller
 
         $proposals = $query->latest()->paginate(15)->withQueryString();
 
-        // Satu query untuk semua statistik (menggantikan 5 query terpisah)
-        $stats = DeviceProposal::selectRaw('
-            COUNT(*) as total,
-            COALESCE(SUM(jumlah), 0) as total_unit,
-            COALESCE(SUM(estimasi_biaya), 0) as total_biaya,
-            SUM(status IN ("Diusulkan","Dalam Pengadaan")) as pending,
-            SUM(status = "Disetujui") as disetujui
-        ')->first();
+        // Cache statistik usulan perangkat
+        $stats = Cache::remember('device_proposal_stats', 30, function () {
+            $raw = DeviceProposal::selectRaw('
+                COUNT(*) as total,
+                COALESCE(SUM(jumlah), 0) as total_unit,
+                COALESCE(SUM(estimasi_biaya), 0) as total_biaya,
+                SUM(status IN ("Diusulkan","Dalam Pengadaan")) as pending,
+                SUM(status = "Disetujui") as disetujui
+            ')->first();
 
-        $totalUsulan    = $stats->total;
-        $totalUnit      = $stats->total_unit;
-        $totalBiaya     = $stats->total_biaya;
-        $pendingUsulan  = $stats->pending;
-        $disetujuiUsulan = $stats->disetujui;
+            return [
+                'total'     => (int) ($raw->total ?? 0),
+                'total_unit' => (int) ($raw->total_unit ?? 0),
+                'total_biaya' => (float) ($raw->total_biaya ?? 0),
+                'pending'   => (int) ($raw->pending ?? 0),
+                'disetujui' => (int) ($raw->disetujui ?? 0),
+            ];
+        });
 
-        // DETEKSI OTOMATIS: OPD yang BELUM memiliki perangkat internet sama sekali (devices_count == 0)
-        $emptyOpds = OpdLocation::withCount(['devices', 'networks'])
-            ->having('devices_count', 0)
-            ->get();
+        $totalUsulan     = $stats['total'];
+        $totalUnit       = $stats['total_unit'];
+        $totalBiaya      = $stats['total_biaya'];
+        $pendingUsulan   = $stats['pending'];
+        $disetujuiUsulan = $stats['disetujui'];
 
-        // Daftar semua OPD untuk dropdown form & filter
-        $opdLocations = OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']);
+        // DETEKSI OTOMATIS: OPD yang BELUM memiliki perangkat internet (efisien menggunakan NOT EXISTS / whereDoesntHave)
+        $emptyOpds = OpdLocation::whereDoesntHave('devices')->with('networks')->get();
+
+        // Daftar semua OPD untuk dropdown form & filter (menggunakan cache bersama)
+        $opdLocations = Cache::remember('opd_locations_dropdown', 300, fn() => OpdLocation::orderByRaw('LOWER(nama)')->get(['id', 'nama']));
 
         $tipeList = [
             'Router',

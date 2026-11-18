@@ -28,6 +28,19 @@ class DeviceProposal extends Model
         'estimasi_biaya' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('device_proposal_stats');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('device_proposal_stats');
+        });
+    }
+
     public function opdLocation()
     {
         return $this->belongsTo(OpdLocation::class);

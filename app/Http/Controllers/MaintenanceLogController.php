@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MaintenanceLog;
 use App\Models\Device;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class MaintenanceLogController extends Controller
 {
@@ -33,25 +34,36 @@ class MaintenanceLogController extends Controller
 
         $logs = $query->orderBy('tanggal', 'desc')->paginate(15);
 
-        // Satu query untuk semua stat (menggantikan 4 query terpisah)
-        $stats = MaintenanceLog::selectRaw('
-            COUNT(*) as total,
-            SUM(status = "Selesai") as selesai,
-            SUM(status = "Pending") as pending,
-            SUM(status = "Dalam Proses") as dalam_proses
-        ')->first();
+        // Cache statistik maintenance status
+        $stats = Cache::remember('maintenance_status_counts', 30, function () {
+            $raw = MaintenanceLog::selectRaw('
+                COUNT(*) as total,
+                SUM(status = "Selesai") as selesai,
+                SUM(status = "Pending") as pending,
+                SUM(status = "Dalam Proses") as dalam_proses
+            ')->first();
 
-        $totalLogs   = $stats->total;
-        $selesai     = $stats->selesai;
-        $pending     = $stats->pending;
-        $dalamProses = $stats->dalam_proses;
+            return [
+                'total'        => (int) ($raw->total ?? 0),
+                'selesai'      => (int) ($raw->selesai ?? 0),
+                'pending'      => (int) ($raw->pending ?? 0),
+                'dalam_proses' => (int) ($raw->dalam_proses ?? 0),
+            ];
+        });
+
+        $totalLogs   = $stats['total'];
+        $selesai     = $stats['selesai'];
+        $pending     = $stats['pending'];
+        $dalamProses = $stats['dalam_proses'];
 
         return view('maintenance-logs.index', compact('logs', 'totalLogs', 'selesai', 'pending', 'dalamProses'));
     }
 
     public function create(Request $request)
     {
-        $devices = Device::with('opdLocation:id,nama')->orderBy('merk')->get(['id', 'merk', 'model', 'tipe', 'opd_location_id']);
+        $devices = Cache::remember('devices_maintenance_dropdown', 60, function () {
+            return Device::with('opdLocation:id,nama')->orderBy('merk')->get(['id', 'merk', 'model', 'tipe', 'opd_location_id']);
+        });
         $selectedDeviceId = $request->get('device_id');
         return view('maintenance-logs.create', compact('devices', 'selectedDeviceId'));
     }

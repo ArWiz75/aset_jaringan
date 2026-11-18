@@ -315,6 +315,7 @@
     </div>
 
     @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script>
         const statusData = @json($devicesByStatus);
         const typeData = @json($devicesByType);

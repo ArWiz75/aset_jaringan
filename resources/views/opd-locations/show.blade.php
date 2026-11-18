@@ -420,6 +420,8 @@
                              @click="openDenah()">
                             <img src="{{ asset('storage/' . $opdLocation->denah_file) }}" 
                                  alt="Denah {{ $opdLocation->nama }}" 
+                                 loading="lazy"
+                                 decoding="async"
                                  class="w-full h-44 object-cover object-top group-hover:scale-105 transition-transform duration-500">
                             
                             {{-- Hover Overlay --}}
@@ -1326,6 +1328,8 @@
                         <img id="denah-img"
                              src="{{ asset('storage/' . $opdLocation->denah_file) }}"
                              alt="Denah Penuh {{ $opdLocation->nama }}"
+                             loading="lazy"
+                             decoding="async"
                              ondragstart="return false;"
                              style="max-width: 90vw; max-height: 82vh; display: block; user-select: none; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); background: #ffffff;">
                     </div>

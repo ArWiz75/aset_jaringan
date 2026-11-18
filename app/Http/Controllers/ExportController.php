@@ -12,17 +12,14 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Http\Request;
 
 class ExportController extends Controller
 {
     // ===== PRIVATE HELPERS: Menghilangkan duplikasi filter query =====
 
-    /**
-     * Bangun query Device berdasarkan filter request yang sama
-     * (dipakai oleh exportDevicesPdf, exportDevicesExcel, printDevices).
-     */
     private function buildDeviceQuery(Request $request)
     {
         $query = Device::with('opdLocation:id,nama');
@@ -43,10 +40,6 @@ class ExportController extends Controller
         return $query;
     }
 
-    /**
-     * Bangun query Device penggantian berdasarkan filter request.
-     * (dipakai oleh printReplacement, exportReplacementPdf, exportReplacementExcel)
-     */
     private function buildReplacementQuery(Request $request)
     {
         $query = Device::with('opdLocation:id,nama');
@@ -64,13 +57,9 @@ class ExportController extends Controller
         return $query;
     }
 
-    /**
-     * Bangun query MaintenanceLog berdasarkan filter request.
-     * (dipakai oleh exportMaintenancePdf, exportMaintenanceExcel, printMaintenance)
-     */
     private function buildMaintenanceQuery(Request $request)
     {
-        $query = MaintenanceLog::with(['device:id,merk,nomor_seri,opd_location_id', 'device.opdLocation:id,nama', 'user:id,name']);
+        $query = MaintenanceLog::with(['device:id,merk,model,nomor_seri,lokasi_pemasangan,opd_location_id', 'device.opdLocation:id,nama', 'user:id,name']);
 
         if ($request->filled('jenis')) {
             $query->where('jenis', $request->jenis);
@@ -82,10 +71,6 @@ class ExportController extends Controller
         return $query;
     }
 
-    /**
-     * Bangun query DeviceProposal berdasarkan filter request.
-     * (dipakai oleh printProposal, exportProposalPdf, exportProposalExcel)
-     */
     private function buildProposalQuery(Request $request)
     {
         $query = DeviceProposal::with('opdLocation:id,nama');
@@ -106,11 +91,70 @@ class ExportController extends Controller
         return $query;
     }
 
+    /**
+     * Terapkan Header Instansi Resmi dan Pengaturan Cetak Standar pada Worksheet Excel
+     */
+    private function applyExcelStandardHeader(Worksheet $sheet, string $docTitle, string $lastCol, ?string $subTitle = null): void
+    {
+        // 1. Judul Instansi
+        $sheet->setCellValue('A1', 'PEMERINTAH KABUPATEN JEMBRANA - DINAS KOMUNIKASI DAN INFORMATIKA');
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(11)->getColor()->setRGB('0F172A');
+        $sheet->getRowDimension(1)->setRowHeight(20);
+
+        // 2. Judul Dokumen
+        $sheet->setCellValue('A2', strtoupper($docTitle));
+        $sheet->mergeCells("A2:{$lastCol}2");
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(13)->getColor()->setRGB('1E293B');
+        $sheet->getRowDimension(2)->setRowHeight(22);
+
+        // 3. Metadata Baris
+        $metaText = $subTitle ?: ('Tanggal Cetak: ' . date('d/m/Y H:i') . ' WIB | Operator: ' . (auth()->user()?->name ?? 'Admin'));
+        $sheet->setCellValue('A3', $metaText);
+        $sheet->mergeCells("A3:{$lastCol}3");
+        $sheet->getStyle('A3')->getFont()->setItalic(true)->setSize(9)->getColor()->setRGB('64748B');
+        $sheet->getRowDimension(3)->setRowHeight(18);
+
+        // Baris 4 spacer
+        $sheet->getRowDimension(4)->setRowHeight(8);
+
+        // Pengaturan Halaman Cetak (Print Setup A4 Landscape, Fit 1 Page Wide)
+        $setup = $sheet->getPageSetup();
+        $setup->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+        $setup->setPaperSize(PageSetup::PAPERSIZE_A4);
+        $setup->setFitToWidth(1);
+        $setup->setFitToHeight(0);
+        $sheet->setShowGridlines(true);
+
+        // Ulangi baris header tabel saat dicetak (baris 5)
+        $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(5, 5);
+    }
+
+    /**
+     * Terapkan styling baris header tabel pada Excel
+     */
+    private function styleTableHeader(Worksheet $sheet, string $lastCol, string $bgColor = '1E293B'): void
+    {
+        $range = "A5:{$lastCol}5";
+        $sheet->getRowDimension(5)->setRowHeight(26);
+
+        $sheet->getStyle($range)->getFont()->setBold(true)->setSize(9.5)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle($range)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB($bgColor);
+        $sheet->getStyle($range)->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle($range)->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('0F172A');
+    }
+
     // ===== DEVICES =====
 
     public function exportDevicesPdf(Request $request)
     {
-        $devices  = $this->buildDeviceQuery($request)->orderBy('merk')->get();
+        $devices  = $this->buildDeviceQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
         $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         $pdf = Pdf::loadView('exports.devices-pdf', compact('devices', 'location'))
@@ -121,76 +165,92 @@ class ExportController extends Controller
 
     public function exportDevicesExcel(Request $request)
     {
-        $devices = $this->buildDeviceQuery($request)->orderBy('merk')->get();
+        $devices  = $this->buildDeviceQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
+        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Perangkat');
 
-        // Header
-        $headers = ['No', 'Merk', 'Tipe', 'Model', 'Nomor Seri', 'IP Address', 'Status', 'Lokasi OPD', 'Lokasi Pemasangan', 'Tanggal Install', 'Keterangan'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $col++;
+        $sub = 'Filter Lokasi: ' . ($location ? $location->nama : 'Semua Lokasi OPD') . ' | Tanggal Unduh: ' . date('d F Y') . ' | Operator: ' . (auth()->user()?->name ?? 'Admin');
+        $this->applyExcelStandardHeader($sheet, 'Laporan Data Perangkat Jaringan', 'K', $sub);
+
+        // Header Tabel di Baris 5
+        $headers = [
+            'A' => ['label' => 'No', 'width' => 6, 'align' => Alignment::HORIZONTAL_CENTER],
+            'B' => ['label' => 'Lokasi OPD', 'width' => 26, 'align' => Alignment::HORIZONTAL_LEFT],
+            'C' => ['label' => 'Titik Pemasangan', 'width' => 20, 'align' => Alignment::HORIZONTAL_LEFT],
+            'D' => ['label' => 'Merk', 'width' => 16, 'align' => Alignment::HORIZONTAL_LEFT],
+            'E' => ['label' => 'Model', 'width' => 16, 'align' => Alignment::HORIZONTAL_LEFT],
+            'F' => ['label' => 'Tipe', 'width' => 13, 'align' => Alignment::HORIZONTAL_CENTER],
+            'G' => ['label' => 'Nomor Seri', 'width' => 18, 'align' => Alignment::HORIZONTAL_CENTER],
+            'H' => ['label' => 'IP Address', 'width' => 16, 'align' => Alignment::HORIZONTAL_CENTER],
+            'I' => ['label' => 'Status', 'width' => 14, 'align' => Alignment::HORIZONTAL_CENTER],
+            'J' => ['label' => 'Tgl Pasang', 'width' => 14, 'align' => Alignment::HORIZONTAL_CENTER],
+            'K' => ['label' => 'Keterangan', 'width' => 30, 'align' => Alignment::HORIZONTAL_LEFT],
+        ];
+
+        foreach ($headers as $col => $conf) {
+            $sheet->setCellValue($col . '5', $conf['label']);
+            $sheet->getColumnDimension($col)->setWidth($conf['width']);
         }
+        $this->styleTableHeader($sheet, 'K', '1E293B');
 
-        // Style header
-        $headerRange = 'A1:K1';
-        $sheet->getStyle($headerRange)->getFont()->setBold(true);
-        $sheet->getStyle($headerRange)->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('334155');
-        $sheet->getStyle($headerRange)->getFont()->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        // Data
-        $row = 2;
+        // Data Rows
+        $row = 6;
         foreach ($devices as $index => $device) {
             $sheet->setCellValue('A' . $row, $index + 1);
-            $sheet->setCellValue('B' . $row, $device->merk);
-            $sheet->setCellValue('C' . $row, $device->tipe);
-            $sheet->setCellValue('D' . $row, $device->model);
-            $sheet->setCellValue('E' . $row, $device->nomor_seri);
-            $sheet->setCellValue('F' . $row, $device->ip_address);
-            $sheet->setCellValue('G' . $row, $device->status);
-            $sheet->setCellValue('H' . $row, $device->opdLocation->nama ?? '-');
-            $sheet->setCellValue('I' . $row, $device->lokasi_pemasangan);
+            $sheet->setCellValue('B' . $row, $device->opdLocation->nama ?? '-');
+            $sheet->setCellValue('C' . $row, $device->lokasi_pemasangan ?? '-');
+            $sheet->setCellValue('D' . $row, $device->merk);
+            $sheet->setCellValue('E' . $row, $device->model ?? '-');
+            $sheet->setCellValue('F' . $row, $device->tipe);
+            $sheet->setCellValue('G' . $row, $device->nomor_seri ?? '-');
+            $sheet->setCellValue('H' . $row, $device->ip_address ?? '-');
+            $sheet->setCellValue('I' . $row, $device->status);
             $sheet->setCellValue('J' . $row, $device->tanggal_install ? $device->tanggal_install->format('d/m/Y') : '-');
-            $sheet->setCellValue('K' . $row, $device->keterangan);
+            $sheet->setCellValue('K' . $row, $device->keterangan ?? '-');
+
+            $sheet->getRowDimension($row)->setRowHeight(22);
+
+            // Zebra style & alignment
+            $rowRange = "A{$row}:K{$row}";
+            if ($row % 2 === 0) {
+                $sheet->getStyle($rowRange)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F8FAFC');
+            }
             $row++;
         }
 
-        // Auto-size columns
-        foreach (range('A', 'K') as $c) {
-            $sheet->getColumnDimension($c)->setAutoSize(true);
+        // Alignments & Borders
+        $lastDataRow = max(6, $row - 1);
+        foreach ($headers as $col => $conf) {
+            $sheet->getStyle("{$col}6:{$col}{$lastDataRow}")
+                ->getAlignment()
+                ->setHorizontal($conf['align'])
+                ->setVertical(Alignment::VERTICAL_CENTER)
+                ->setWrapText(in_array($col, ['B', 'C', 'K']));
         }
 
-        // Border
-        $dataRange = 'A1:K' . ($row - 1);
-        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A6:K{$lastDataRow}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('CBD5E1');
 
-        // Include Denah if filtered by location
-        if ($request->filled('opd_location_id')) {
-            $location = OpdLocation::find($request->opd_location_id);
-            if ($location && $location->denah_file) {
-                $denahPath = storage_path('app/public/' . $location->denah_file);
-                $ext = strtolower(pathinfo($denahPath, PATHINFO_EXTENSION));
-                if (file_exists($denahPath) && in_array($ext, ['jpg', 'jpeg', 'png'])) {
-                    $row += 1;
-                    $sheet->setCellValue('A' . $row, 'DENAH GEDUNG / RUANGAN (' . $location->nama . ')');
-                    $sheet->getStyle('A' . $row)->getFont()->setBold(true);
-                    
-                    $drawing = new Drawing();
-                    $drawing->setName('Denah');
-                    $drawing->setPath($denahPath);
-                    $drawing->setHeight(300);
-                    $drawing->setCoordinates('A' . ($row + 1));
-                    $drawing->setWorksheet($sheet);
-                }
-            }
-        }
+        // Summary Row
+        $sheet->setCellValue("A{$row}", 'TOTAL PERANGKAT TERDATA');
+        $sheet->mergeCells("A{$row}:H{$row}");
+        $sheet->setCellValue("I{$row}", $devices->count() . ' Unit');
+        $sheet->mergeCells("I{$row}:K{$row}");
+        $sheet->getRowDimension($row)->setRowHeight(24);
+
+        $sumRange = "A{$row}:K{$row}";
+        $sheet->getStyle($sumRange)->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("I{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle($sumRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
+        $sheet->getStyle($sumRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
+        $sheet->getStyle($sumRange)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE)->getColor()->setRGB('0F172A');
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'laporan-perangkat-' . date('Y-m-d') . '.xlsx';
@@ -218,43 +278,88 @@ class ExportController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Log Maintenance');
 
-        $headers = ['No', 'Perangkat', 'Lokasi', 'Jenis', 'Deskripsi', 'Tanggal', 'Biaya', 'Status', 'Teknisi', 'Catatan'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $col++;
+        $this->applyExcelStandardHeader($sheet, 'Laporan Riwayat Pemeliharaan Jaringan', 'J');
+
+        // Headers
+        $headers = [
+            'A' => ['label' => 'No', 'width' => 6, 'align' => Alignment::HORIZONTAL_CENTER],
+            'B' => ['label' => 'Perangkat & SN', 'width' => 24, 'align' => Alignment::HORIZONTAL_LEFT],
+            'C' => ['label' => 'Lokasi OPD', 'width' => 24, 'align' => Alignment::HORIZONTAL_LEFT],
+            'D' => ['label' => 'Jenis', 'width' => 15, 'align' => Alignment::HORIZONTAL_CENTER],
+            'E' => ['label' => 'Deskripsi Permasalahan / Tindakan', 'width' => 38, 'align' => Alignment::HORIZONTAL_LEFT],
+            'F' => ['label' => 'Tanggal', 'width' => 14, 'align' => Alignment::HORIZONTAL_CENTER],
+            'G' => ['label' => 'Biaya (Rp)', 'width' => 18, 'align' => Alignment::HORIZONTAL_RIGHT],
+            'H' => ['label' => 'Status', 'width' => 13, 'align' => Alignment::HORIZONTAL_CENTER],
+            'I' => ['label' => 'Teknisi', 'width' => 18, 'align' => Alignment::HORIZONTAL_CENTER],
+            'J' => ['label' => 'Catatan', 'width' => 26, 'align' => Alignment::HORIZONTAL_LEFT],
+        ];
+
+        foreach ($headers as $col => $conf) {
+            $sheet->setCellValue($col . '5', $conf['label']);
+            $sheet->getColumnDimension($col)->setWidth($conf['width']);
         }
+        $this->styleTableHeader($sheet, 'J', '1E293B');
 
-        $headerRange = 'A1:J1';
-        $sheet->getStyle($headerRange)->getFont()->setBold(true);
-        $sheet->getStyle($headerRange)->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('334155');
-        $sheet->getStyle($headerRange)->getFont()->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $row = 2;
+        $row = 6;
+        $totalBiaya = 0;
         foreach ($logs as $index => $log) {
+            $perangkatText = ($log->device->merk ?? '-') . ($log->device->model ? ' ' . $log->device->model : '') . "\nSN: " . ($log->device->nomor_seri ?? '-');
+            $biayaVal = (float)($log->biaya ?? 0);
+            $totalBiaya += $biayaVal;
+
             $sheet->setCellValue('A' . $row, $index + 1);
-            $sheet->setCellValue('B' . $row, ($log->device->merk ?? '') . ' - ' . ($log->device->nomor_seri ?? ''));
+            $sheet->setCellValue('B' . $row, $perangkatText);
             $sheet->setCellValue('C' . $row, $log->device->opdLocation->nama ?? '-');
             $sheet->setCellValue('D' . $row, $log->jenis);
             $sheet->setCellValue('E' . $row, $log->deskripsi);
-            $sheet->setCellValue('F' . $row, $log->tanggal->format('d/m/Y'));
-            $sheet->setCellValue('G' . $row, $log->biaya ? 'Rp ' . number_format($log->biaya, 0, ',', '.') : '-');
+            $sheet->setCellValue('F' . $row, $log->tanggal ? $log->tanggal->format('d/m/Y') : '-');
+            $sheet->setCellValue('G' . $row, $biayaVal);
             $sheet->setCellValue('H' . $row, $log->status);
             $sheet->setCellValue('I' . $row, $log->user->name ?? '-');
-            $sheet->setCellValue('J' . $row, $log->catatan);
+            $sheet->setCellValue('J' . $row, $log->catatan ?? '-');
+
+            $sheet->getRowDimension($row)->setRowHeight(24);
+
+            if ($row % 2 === 0) {
+                $sheet->getStyle("A{$row}:J{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F8FAFC');
+            }
             $row++;
         }
 
-        foreach (range('A', 'J') as $c) {
-            $sheet->getColumnDimension($c)->setAutoSize(true);
+        $lastDataRow = max(6, $row - 1);
+        foreach ($headers as $col => $conf) {
+            $sheet->getStyle("{$col}6:{$col}{$lastDataRow}")
+                ->getAlignment()
+                ->setHorizontal($conf['align'])
+                ->setVertical(Alignment::VERTICAL_CENTER)
+                ->setWrapText(in_array($col, ['B', 'C', 'E', 'J']));
         }
 
-        $dataRange = 'A1:J' . ($row - 1);
-        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN);
+        // Format Currency Column G
+        $sheet->getStyle("G6:G{$lastDataRow}")->getNumberFormat()
+            ->setFormatCode('"Rp "#,##0');
+
+        $sheet->getStyle("A6:J{$lastDataRow}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('CBD5E1');
+
+        // Summary Row
+        $sheet->setCellValue("A{$row}", 'TOTAL REALISASI BIAYA PEMELIHARAAN');
+        $sheet->mergeCells("A{$row}:F{$row}");
+        $sheet->setCellValue("G{$row}", $totalBiaya);
+        $sheet->mergeCells("H{$row}:J{$row}");
+        $sheet->getRowDimension($row)->setRowHeight(24);
+
+        $sumRange = "A{$row}:J{$row}";
+        $sheet->getStyle($sumRange)->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("G{$row}")->getNumberFormat()->setFormatCode('"Rp "#,##0');
+        $sheet->getStyle("G{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle($sumRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
+        $sheet->getStyle($sumRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
+        $sheet->getStyle($sumRange)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE)->getColor()->setRGB('0F172A');
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'laporan-maintenance-' . date('Y-m-d') . '.xlsx';
@@ -266,7 +371,7 @@ class ExportController extends Controller
 
     public function printDevices(Request $request)
     {
-        $devices  = $this->buildDeviceQuery($request)->orderBy('merk')->get();
+        $devices  = $this->buildDeviceQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
         $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         return view('exports.devices-print', compact('devices', 'location'));
@@ -278,9 +383,6 @@ class ExportController extends Controller
         return view('exports.maintenance-print', compact('logs'));
     }
 
-    /**
-     * Laporan Cetak Khusus Rekomendasi Penggantian & Perencanaan Pengadaan Perangkat
-     */
     public function printReplacement(Request $request)
     {
         $devices    = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
@@ -291,9 +393,6 @@ class ExportController extends Controller
         return view('exports.replacement-print', compact('devices', 'location', 'totalBiaya', 'totalOpd'));
     }
 
-    /**
-     * Export PDF Rekomendasi Penggantian & Pengadaan Perangkat
-     */
     public function exportReplacementPdf(Request $request)
     {
         $devices    = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
@@ -307,61 +406,47 @@ class ExportController extends Controller
         return $pdf->download('laporan-usulan-penggantian-perangkat-' . date('Y-m-d') . '.pdf');
     }
 
-    /**
-     * Export Excel Perencanaan Pengadaan Perangkat Pengganti
-     */
     public function exportReplacementExcel(Request $request)
     {
-        $devices = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
+        $devices  = $this->buildReplacementQuery($request)->orderBy('opd_location_id')->orderBy('merk')->get();
+        $location = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Rencana Penggantian Aset');
 
-        // Header Title
-        $sheet->setCellValue('A1', 'PEMERINTAH KABUPATEN JEMBRANA - DINAS KOMUNIKASI DAN INFORMATIKA');
-        $sheet->setCellValue('A2', 'USULAN PERENCANAAN PENGGANTIAN DAN PENGADAAN PERANGKAT JARINGAN - ' . date('d F Y'));
-        $sheet->mergeCells('A1:L1');
-        $sheet->mergeCells('A2:L2');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A2')->getFont()->setSize(10)->getColor()->setRGB('64748B');
+        $sub = 'Filter Lokasi: ' . ($location ? $location->nama : 'Semua Lokasi OPD') . ' | Tanggal Unduh: ' . date('d F Y') . ' | Operator: ' . (auth()->user()?->name ?? 'Admin');
+        $this->applyExcelStandardHeader($sheet, 'Usulan Perencanaan Penggantian & Pengadaan Perangkat', 'L', $sub);
 
-        // Table Header
         $headers = [
-            'No',
-            'Lokasi OPD',
-            'Ruang / Titik Pasang',
-            'Perangkat Saat Ini',
-            'Tipe',
-            'No. Seri',
-            'IP Address',
-            'Tgl Pasang / Umur',
-            'Kondisi Status',
-            'Alasan Penggantian (Pertimbangan Teknis)',
-            'Usulan / Rekomendasi Pengganti',
-            'Estimasi Biaya (Rp)'
+            'A' => ['label' => 'No', 'width' => 6, 'align' => Alignment::HORIZONTAL_CENTER],
+            'B' => ['label' => 'Lokasi OPD', 'width' => 24, 'align' => Alignment::HORIZONTAL_LEFT],
+            'C' => ['label' => 'Ruang / Titik Pasang', 'width' => 20, 'align' => Alignment::HORIZONTAL_LEFT],
+            'D' => ['label' => 'Perangkat Saat Ini', 'width' => 22, 'align' => Alignment::HORIZONTAL_LEFT],
+            'E' => ['label' => 'Tipe', 'width' => 14, 'align' => Alignment::HORIZONTAL_CENTER],
+            'F' => ['label' => 'No. Seri', 'width' => 16, 'align' => Alignment::HORIZONTAL_CENTER],
+            'G' => ['label' => 'IP Address', 'width' => 16, 'align' => Alignment::HORIZONTAL_CENTER],
+            'H' => ['label' => 'Tgl Pasang / Umur', 'width' => 18, 'align' => Alignment::HORIZONTAL_CENTER],
+            'I' => ['label' => 'Kondisi Status', 'width' => 15, 'align' => Alignment::HORIZONTAL_CENTER],
+            'J' => ['label' => 'Alasan Penggantian (Pertimbangan Teknis)', 'width' => 38, 'align' => Alignment::HORIZONTAL_LEFT],
+            'K' => ['label' => 'Usulan / Rekomendasi Pengganti', 'width' => 26, 'align' => Alignment::HORIZONTAL_LEFT],
+            'L' => ['label' => 'Estimasi Biaya (Rp)', 'width' => 19, 'align' => Alignment::HORIZONTAL_RIGHT],
         ];
 
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue($col . '4', $header);
-            $col++;
+        foreach ($headers as $col => $conf) {
+            $sheet->setCellValue($col . '5', $conf['label']);
+            $sheet->getColumnDimension($col)->setWidth($conf['width']);
         }
+        $this->styleTableHeader($sheet, 'L', '1E293B');
 
-        $headerRange = 'A4:L4';
-        $sheet->getStyle($headerRange)->getFont()->setBold(true);
-        $sheet->getStyle($headerRange)->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('1E293B');
-        $sheet->getStyle($headerRange)->getFont()->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $row = 5;
+        $row = 6;
         $totalBiaya = 0;
         foreach ($devices as $index => $device) {
             $perangkatText = $device->merk . ($device->model ? ' (' . $device->model . ')' : '');
-            $umurText = ($device->tanggal_install ? $device->tanggal_install->format('d/m/Y') : '-') . 
-                        ($device->umur_perangkat ? ' (' . $device->umur_perangkat . ')' : '');
+            $umurText = ($device->tanggal_install ? $device->tanggal_install->format('d/m/Y') : '-') .
+                        ($device->umur_perangkat ? "\n(" . $device->umur_perangkat . ')' : '');
+            $biayaVal = (float)($device->estimasi_biaya ?? 0);
+            $totalBiaya += $biayaVal;
 
             $sheet->setCellValue('A' . $row, $index + 1);
             $sheet->setCellValue('B' . $row, $device->opdLocation->nama ?? '-');
@@ -374,35 +459,49 @@ class ExportController extends Controller
             $sheet->setCellValue('I' . $row, $device->status);
             $sheet->setCellValue('J' . $row, $device->alasan_penggantian ?? $device->keterangan ?? '-');
             $sheet->setCellValue('K' . $row, $device->rekomendasi_pengganti ?? '-');
-            $sheet->setCellValue('L' . $row, (float)($device->estimasi_biaya ?? 0));
+            $sheet->setCellValue('L' . $row, $biayaVal);
 
-            $totalBiaya += (float)($device->estimasi_biaya ?? 0);
+            $sheet->getRowDimension($row)->setRowHeight(24);
+
+            if ($row % 2 === 0) {
+                $sheet->getStyle("A{$row}:L{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F8FAFC');
+            }
             $row++;
         }
 
-        // Summary Row
-        $sheet->setCellValue('A' . $row, 'TOTAL ESTIMASI KEBUTUHAN BIAYA');
-        $sheet->mergeCells('A' . $row . ':K' . $row);
-        $sheet->setCellValue('L' . $row, $totalBiaya);
-        $sheet->getStyle('A' . $row . ':L' . $row)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $row . ':K' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('A' . $row . ':L' . $row)->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('F1F5F9');
-
-        // Format Currency Column L
-        $sheet->getStyle('L5:L' . $row)->getNumberFormat()
-            ->setFormatCode('"Rp "#,##0');
-
-        // Auto-size columns
-        foreach (range('A', 'L') as $c) {
-            $sheet->getColumnDimension($c)->setAutoSize(true);
+        $lastDataRow = max(6, $row - 1);
+        foreach ($headers as $col => $conf) {
+            $sheet->getStyle("{$col}6:{$col}{$lastDataRow}")
+                ->getAlignment()
+                ->setHorizontal($conf['align'])
+                ->setVertical(Alignment::VERTICAL_CENTER)
+                ->setWrapText(in_array($col, ['B', 'C', 'D', 'H', 'J', 'K']));
         }
 
-        // Border
-        $dataRange = 'A4:L' . $row;
-        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN);
+        // Format Currency Column L
+        $sheet->getStyle("L6:L{$lastDataRow}")->getNumberFormat()
+            ->setFormatCode('"Rp "#,##0');
+
+        $sheet->getStyle("A6:L{$lastDataRow}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('CBD5E1');
+
+        // Summary Row
+        $sheet->setCellValue("A{$row}", 'TOTAL ESTIMASI KEBUTUHAN BIAYA PENGADAAN');
+        $sheet->mergeCells("A{$row}:K{$row}");
+        $sheet->setCellValue("L{$row}", $totalBiaya);
+        $sheet->getRowDimension($row)->setRowHeight(24);
+
+        $sumRange = "A{$row}:L{$row}";
+        $sheet->getStyle($sumRange)->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("L{$row}")->getNumberFormat()->setFormatCode('"Rp "#,##0');
+        $sheet->getStyle("L{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle($sumRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
+        $sheet->getStyle($sumRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
+        $sheet->getStyle($sumRange)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE)->getColor()->setRGB('0F172A');
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'laporan-pengadaan-penggantian-' . date('Y-m-d') . '.xlsx';
@@ -412,9 +511,6 @@ class ExportController extends Controller
         return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
     }
 
-    /**
-     * Laporan Cetak Resmi Rekomendasi / Usulan Penambahan Perangkat Baru
-     */
     public function printProposal(Request $request)
     {
         $proposals  = $this->buildProposalQuery($request)->orderBy('opd_location_id')->orderBy('urgensi')->get();
@@ -422,14 +518,11 @@ class ExportController extends Controller
         $totalBiaya = $proposals->sum('estimasi_biaya');
         $totalUnit  = $proposals->sum('jumlah');
         $totalOpd   = $proposals->pluck('opd_location_id')->unique()->count();
-        $emptyOpds  = OpdLocation::withCount('devices')->having('devices_count', 0)->get(['id', 'nama', 'kecamatan']);
+        $emptyOpds  = OpdLocation::whereDoesntHave('devices')->get(['id', 'nama', 'kecamatan']);
 
         return view('exports.device-proposal-print', compact('proposals', 'location', 'totalBiaya', 'totalUnit', 'totalOpd', 'emptyOpds'));
     }
 
-    /**
-     * Export PDF Rekomendasi / Usulan Penambahan Perangkat Baru
-     */
     public function exportProposalPdf(Request $request)
     {
         $proposals  = $this->buildProposalQuery($request)->orderBy('opd_location_id')->orderBy('urgensi')->get();
@@ -437,7 +530,7 @@ class ExportController extends Controller
         $totalBiaya = $proposals->sum('estimasi_biaya');
         $totalUnit  = $proposals->sum('jumlah');
         $totalOpd   = $proposals->pluck('opd_location_id')->unique()->count();
-        $emptyOpds  = OpdLocation::withCount('devices')->having('devices_count', 0)->get(['id', 'nama', 'kecamatan']);
+        $emptyOpds  = OpdLocation::whereDoesntHave('devices')->get(['id', 'nama', 'kecamatan']);
 
         $pdf = Pdf::loadView('exports.device-proposal-pdf', compact('proposals', 'location', 'totalBiaya', 'totalUnit', 'totalOpd', 'emptyOpds'))
             ->setPaper('a4', 'landscape');
@@ -445,98 +538,103 @@ class ExportController extends Controller
         return $pdf->download('laporan-usulan-penambahan-perangkat-' . date('Y-m-d') . '.pdf');
     }
 
-    /**
-     * Export Excel Rekomendasi / Usulan Penambahan Perangkat Baru
-     */
     public function exportProposalExcel(Request $request)
     {
         $proposals = $this->buildProposalQuery($request)->orderBy('opd_location_id')->get();
+        $location  = $request->filled('opd_location_id') ? OpdLocation::find($request->opd_location_id) : null;
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Usulan Penambahan Perangkat');
+        $sheet->setTitle('Usulan Pengadaan');
 
-        // Header Title
-        $sheet->setCellValue('A1', 'PEMERINTAH KABUPATEN JEMBRANA - DINAS KOMUNIKASI DAN INFORMATIKA');
-        $sheet->setCellValue('A2', 'DAFTAR REKOMENDASI DAN USULAN PENAMBAHAN PERANGKAT JARINGAN - ' . date('d F Y'));
-        $sheet->mergeCells('A1:K1');
-        $sheet->mergeCells('A2:K2');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A2')->getFont()->setSize(10)->getColor()->setRGB('64748B');
+        $sub = 'Filter Lokasi: ' . ($location ? $location->nama : 'Semua Lokasi OPD') . ' | Tanggal Unduh: ' . date('d F Y') . ' | Operator: ' . (auth()->user()?->name ?? 'Admin');
+        $this->applyExcelStandardHeader($sheet, 'Daftar Usulan Pengadaan & Penambahan Perangkat Baru', 'K', $sub);
 
-        // Table Header
         $headers = [
-            'No',
-            'Lokasi OPD',
-            'Ruang / Titik Pasang',
-            'Tipe Perangkat',
-            'Jumlah (Unit)',
-            'Urgensi',
-            'Alasan Kebutuhan / Justifikasi Teknis',
-            'Rekomendasi Spesifikasi / Merk & Model',
-            'Estimasi Biaya (Rp)',
-            'Status Usulan',
-            'Pengusul & Catatan'
+            'A' => ['label' => 'No', 'width' => 6, 'align' => Alignment::HORIZONTAL_CENTER],
+            'B' => ['label' => 'Lokasi OPD', 'width' => 24, 'align' => Alignment::HORIZONTAL_LEFT],
+            'C' => ['label' => 'Ruang Pasang', 'width' => 18, 'align' => Alignment::HORIZONTAL_LEFT],
+            'D' => ['label' => 'Tipe Perangkat', 'width' => 16, 'align' => Alignment::HORIZONTAL_CENTER],
+            'E' => ['label' => 'Jumlah (Unit)', 'width' => 14, 'align' => Alignment::HORIZONTAL_CENTER],
+            'F' => ['label' => 'Urgensi', 'width' => 13, 'align' => Alignment::HORIZONTAL_CENTER],
+            'G' => ['label' => 'Alasan Kebutuhan / Justifikasi Teknis', 'width' => 38, 'align' => Alignment::HORIZONTAL_LEFT],
+            'H' => ['label' => 'Rekomendasi Spesifikasi / Merk', 'width' => 26, 'align' => Alignment::HORIZONTAL_LEFT],
+            'I' => ['label' => 'Estimasi Biaya (Rp)', 'width' => 19, 'align' => Alignment::HORIZONTAL_RIGHT],
+            'J' => ['label' => 'Status Usulan', 'width' => 15, 'align' => Alignment::HORIZONTAL_CENTER],
+            'K' => ['label' => 'Pengusul & Catatan', 'width' => 26, 'align' => Alignment::HORIZONTAL_LEFT],
         ];
 
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue($col . '4', $header);
-            $sheet->getStyle($col . '4')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-            $sheet->getStyle($col . '4')->getFill()
-                ->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()->setRGB('059669'); // Emerald / Green theme
-            $sheet->getStyle($col . '4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $col++;
+        foreach ($headers as $col => $conf) {
+            $sheet->setCellValue($col . '5', $conf['label']);
+            $sheet->getColumnDimension($col)->setWidth($conf['width']);
         }
+        $this->styleTableHeader($sheet, 'K', '1E293B');
 
-        // Data Rows
-        $row = 5;
+        $row = 6;
         $totalBiaya = 0;
-        $totalUnit = 0;
+        $totalUnit  = 0;
 
         foreach ($proposals as $idx => $p) {
+            $unitVal = (int)$p->jumlah;
+            $biayaVal = (float)($p->estimasi_biaya ?? 0);
+            $totalUnit += $unitVal;
+            $totalBiaya += $biayaVal;
+
             $sheet->setCellValue('A' . $row, $idx + 1);
             $sheet->setCellValue('B' . $row, $p->opdLocation->nama ?? '-');
             $sheet->setCellValue('C' . $row, $p->lokasi_ruang ?? '-');
             $sheet->setCellValue('D' . $row, $p->tipe_perangkat);
-            $sheet->setCellValue('E' . $row, (int)$p->jumlah);
+            $sheet->setCellValue('E' . $row, $unitVal);
             $sheet->setCellValue('F' . $row, $p->urgensi);
             $sheet->setCellValue('G' . $row, $p->alasan_kebutuhan);
             $sheet->setCellValue('H' . $row, $p->rekomendasi_spesifikasi ?? '-');
-            $sheet->setCellValue('I' . $row, (float)($p->estimasi_biaya ?? 0));
+            $sheet->setCellValue('I' . $row, $biayaVal);
             $sheet->setCellValue('J' . $row, $p->status);
             $sheet->setCellValue('K' . $row, ($p->nama_pengusul ?? '-') . ($p->catatan ? ' (' . $p->catatan . ')' : ''));
 
-            $totalUnit += (int)$p->jumlah;
-            $totalBiaya += (float)($p->estimasi_biaya ?? 0);
+            $sheet->getRowDimension($row)->setRowHeight(24);
+
+            if ($row % 2 === 0) {
+                $sheet->getStyle("A{$row}:K{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F8FAFC');
+            }
             $row++;
         }
 
-        // Summary Row
-        $sheet->setCellValue('A' . $row, 'TOTAL UNIT & ANGGARAN');
-        $sheet->mergeCells('A' . $row . ':D' . $row);
-        $sheet->setCellValue('E' . $row, $totalUnit);
-        $sheet->setCellValue('I' . $row, $totalBiaya);
-        $sheet->getStyle('A' . $row . ':K' . $row)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('A' . $row . ':K' . $row)->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setRGB('ECFDF5');
-
-        // Format Currency Column I
-        $sheet->getStyle('I5:I' . $row)->getNumberFormat()
-            ->setFormatCode('"Rp "#,##0');
-
-        // Auto-size columns
-        foreach (range('A', 'K') as $c) {
-            $sheet->getColumnDimension($c)->setAutoSize(true);
+        $lastDataRow = max(6, $row - 1);
+        foreach ($headers as $col => $conf) {
+            $sheet->getStyle("{$col}6:{$col}{$lastDataRow}")
+                ->getAlignment()
+                ->setHorizontal($conf['align'])
+                ->setVertical(Alignment::VERTICAL_CENTER)
+                ->setWrapText(in_array($col, ['B', 'C', 'G', 'H', 'K']));
         }
 
-        // Border
-        $dataRange = 'A4:K' . $row;
-        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
-            ->setBorderStyle(Border::BORDER_THIN);
+        // Format Currency Column I
+        $sheet->getStyle("I6:I{$lastDataRow}")->getNumberFormat()
+            ->setFormatCode('"Rp "#,##0');
+
+        $sheet->getStyle("A6:K{$lastDataRow}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setRGB('CBD5E1');
+
+        // Summary Row
+        $sheet->setCellValue("A{$row}", 'TOTAL UNIT & ESTIMASI ANGGARAN');
+        $sheet->mergeCells("A{$row}:D{$row}");
+        $sheet->setCellValue("E{$row}", $totalUnit);
+        $sheet->setCellValue("I{$row}", $totalBiaya);
+        $sheet->getRowDimension($row)->setRowHeight(24);
+
+        $sumRange = "A{$row}:K{$row}";
+        $sheet->getStyle($sumRange)->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("I{$row}")->getNumberFormat()->setFormatCode('"Rp "#,##0');
+        $sheet->getStyle("I{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle($sumRange)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
+        $sheet->getStyle($sumRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
+        $sheet->getStyle($sumRange)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE)->getColor()->setRGB('0F172A');
 
         $writer = new Xlsx($spreadsheet);
         $filename = 'laporan-usulan-penambahan-perangkat-' . date('Y-m-d') . '.xlsx';
@@ -546,4 +644,3 @@ class ExportController extends Controller
         return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
     }
 }
-

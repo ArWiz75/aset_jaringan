@@ -139,7 +139,7 @@
                     Foto Perangkat
                 </h3>
                 <a href="{{ asset('storage/' . $device->foto_perangkat) }}" target="_blank" class="group block w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700/50 hover:border-cyan-500/50 transition-all bg-slate-50 dark:bg-slate-800 shadow-inner">
-                    <img src="{{ asset('storage/' . $device->foto_perangkat) }}" alt="Foto {{ $device->merk }}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500">
+                    <img src="{{ asset('storage/' . $device->foto_perangkat) }}" alt="Foto {{ $device->merk }}" loading="lazy" decoding="async" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500">
                 </a>
             </div>
             @endif

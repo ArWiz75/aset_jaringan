@@ -21,6 +21,21 @@ class OpdLocation extends Model
         'denah_file',
     ];
 
+    // ===== LIFECYCLE HOOKS =====
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('opd_locations_dropdown');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('opd_locations_dropdown');
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+        });
+    }
+
     // ===== RELATIONSHIPS =====
 
     public function networks()

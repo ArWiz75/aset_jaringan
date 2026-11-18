@@ -123,7 +123,7 @@
         @if(isset($d) && $d->foto_perangkat)
             <div class="mb-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 w-fit">
                 <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-wider">File saat ini:</p>
-                <img src="{{ asset('storage/' . $d->foto_perangkat) }}" alt="Foto {{ $d->merk }}" class="h-32 w-auto object-cover rounded-lg border border-slate-200 dark:border-slate-700/50 shadow-sm">
+                <img src="{{ asset('storage/' . $d->foto_perangkat) }}" alt="Foto {{ $d->merk }}" loading="lazy" decoding="async" class="h-32 w-auto object-cover rounded-lg border border-slate-200 dark:border-slate-700/50 shadow-sm">
             </div>
         @endif
         <div class="relative group">
